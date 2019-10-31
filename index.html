@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HIIT Timer</title>
+</head>
+<body>
+
+<p>see console</p>
+
+<script>
+  /*******************************************
+    DOM elements
+  ********************************************/    
+  // nothing here yet
+  
+  
+  /*******************************************
+    Templating functions
+  ********************************************/
+  const showAction = (action) => {
+    console.log(action);
+  }
+  
+  const showSecond = (num) => {
+    console.log(num);
+  }
+  
+  /*******************************************
+    Workouts data
+  ********************************************/
+  const workout = [
+                      {action: "push ups", seconds: 5}, 
+                      {action: "rest", seconds: 2},
+                      {action: "jumping jacks", seconds: 5},
+                      {action: "rest", seconds: 2}
+                    ];
+
+  /*******************************************
+    Utility functions
+  ********************************************/
+  const sequence = (fns) => {
+    var fn = fns.shift();
+    return fn ? fn().then(() => sequence(fns)) : Promise.resolve(undefined);
+  }
+
+  /*******************************************
+    Workouts functions
+  ********************************************/  
+  const countDown = ({ action, seconds }) => {
+    return () => {  
+      return new Promise(function (resolve) {
+          showAction(action);
+          let timer = setInterval(() => {
+            showSecond(seconds);
+            seconds--;
+            if(seconds < 0){
+              clearInterval(timer);
+              setTimeout(() => resolve(), 1000);
+            }
+          }, 1000);
+        });
+    }
+  }
+  
+  const startWorkOut = (workout) => {
+    const fnQueue = workout.map(exercise => countDown(exercise));    
+    sequence(fnQueue);
+  }
+  
+  /*******************************************
+    Event listeners
+  ********************************************/
+  // nothing here yet
+  
+</script>
+
+</body>
+</html>
