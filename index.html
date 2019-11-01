@@ -3,38 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <title>HIIT Timer</title>
+  <link href="https://fonts.googleapis.com/css?family=Rubik&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<p>see console</p>
-
+  <div class="wrapper">
+    <div class="title"><h1>The Rock's Workout</h1></div>
+    <div class="exercises">
+      <div class="action"></div>
+      <div class="action"></div>
+      <div class="action"></div>
+      <button onclick="startWorkOut(workout)" class="button">start</button>
+    </div>
+  </div>
+  <div class="wrapper" id="timer">
+    <span class="timerAction"></span>
+    <h1 class="timerSeconds"></h1>
+    <button onclick="pauseWorkOut()" class="button" id="pause">pause</button>
+  </div>
+  
+  
 <script>
+  let isPaused = false;
+  
   /*******************************************
     DOM elements
   ********************************************/    
-  // nothing here yet
-  
+  const pause = document.getElementById('pause');
+  const timer = document.getElementById('timer');
+  const timerSeconds = timer.querySelector('.timerSeconds');
+  const timerAction = timer.querySelector('.timerAction');
   
   /*******************************************
     Templating functions
   ********************************************/
   const showAction = (action) => {
-    console.log(action);
+//    console.log(action);
+    timerAction.textContent = action;
   }
   
   const showSecond = (num) => {
-    console.log(num);
+//    console.log(num);
+    timerSeconds.textContent = num;
   }
+  
+  const updateButton = (button, textContent) => button.textContent = textContent;
   
   /*******************************************
     Workouts data
   ********************************************/
   const workout = [
-                      {action: "push ups", seconds: 5}, 
-                      {action: "rest", seconds: 2},
-                      {action: "jumping jacks", seconds: 5},
-                      {action: "rest", seconds: 2}
-                    ];
+          {action: "push ups", seconds: 5}, 
+          {action: "rest", seconds: 2},
+          {action: "jumping jacks", seconds: 5},
+          {action: "rest", seconds: 2}
+      ];
 
   /*******************************************
     Utility functions
@@ -51,10 +75,11 @@
     return () => {  
       return new Promise(function (resolve) {
           showAction(action);
+          showSecond(seconds);
           let timer = setInterval(() => {
+            if(!isPaused) seconds--;
             showSecond(seconds);
-            seconds--;
-            if(seconds < 0){
+            if(seconds === 0){
               clearInterval(timer);
               setTimeout(() => resolve(), 1000);
             }
@@ -63,9 +88,27 @@
     }
   }
   
+  const endWorkOut = () => {
+    return () => {
+      return new Promise(function (resolve) {
+        showAction("Workout Complete");
+        showSecond("");
+        pause.style.visibility = 'hidden';
+        resolve();
+      });
+    }
+  }
+  
   const startWorkOut = (workout) => {
-    const fnQueue = workout.map(exercise => countDown(exercise));    
-    sequence(fnQueue);
+    const workoutReady = [countDown({action: "get ready", seconds: 10})];
+    const workoutQueue = workout.map(exercise => countDown(exercise));
+    timer.style.visibility = 'visible';
+    sequence(workoutReady.concat(workoutQueue, endWorkOut()));
+  }
+  
+  const pauseWorkOut = () => {
+    isPaused = !isPaused;
+    updateButton(pause, isPaused ? 'resume' : 'pause');
   }
   
   /*******************************************
