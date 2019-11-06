@@ -4,6 +4,8 @@ let isPaused = false;
   Settings (to be queried from JSON or local storage)
 ********************************************/
 let notifySecondsToNextExercise = 3;
+let flashBackgroundOn = false;
+let notificationOn = false;
   
 /*******************************************
   DOM elements
@@ -12,6 +14,7 @@ const pause = document.getElementById('pause');
 const timer = document.getElementById('timer');
 const timerSeconds = timer.querySelector('.timerSeconds');
 const timerAction = timer.querySelector('.timerAction');
+const timerNextAction = timer.querySelector('.timerNextAction');
 
 /*******************************************
   Templating functions
@@ -25,11 +28,21 @@ const flashBackground = (background, duration = 300) => {
   }
 }
 
+const playNotification = () => {
+  
+}
+
+const speakAction = () => {
+  
+}
+
+const showNextAction = (nextAction) => timerNextAction.textContent = ["", "last exercise"].includes(nextAction) ? nextAction : `Next: ${nextAction}`;
+
 const showAction = (action) => timerAction.textContent = action;
 
 const showSecond = (num) => {
   timerSeconds.textContent = num;
-  if(num <= notifySecondsToNextExercise){
+  if(num <= notifySecondsToNextExercise && flashBackgroundOn){
     flashBackground(timer);
   }
 }
@@ -40,19 +53,21 @@ const updateButton = (button, textContent) => button.textContent = textContent;
   Workouts data
 ********************************************/
 const workout = [
-        {action: "Jump Squats", seconds: 60}, 
-        {action: "Push-ups", seconds: 60},
-        {action: "Burpees", seconds: 60},
-        {action: "Rest", seconds: 20},
-        {action: "Jump Squats", seconds: 60}, 
-        {action: "Push-ups", seconds: 60},
-        {action: "Burpees", seconds: 60},
-        {action: "Rest", seconds: 20},
-        {action: "Jump Squats", seconds: 60}, 
-        {action: "Push-ups", seconds: 60},
-        {action: "Burpees", seconds: 60},
-        {action: "Rest", seconds: 20}
-    ];
+        {action: "Jump Squats", seconds: 6}, 
+        {action: "Push-ups", seconds: 6},
+        {action: "Burpees", seconds: 6},
+        {action: "Rest", seconds: 2},
+        {action: "Jump Squats", seconds: 6}
+      ];
+//  , 
+//        {action: "Push-ups", seconds: 60},
+//        {action: "Burpees", seconds: 60},
+//        {action: "Rest", seconds: 20},
+//        {action: "Jump Squats", seconds: 60}, 
+//        {action: "Push-ups", seconds: 60},
+//        {action: "Burpees", seconds: 60},
+//        {action: "Rest", seconds: 20}
+//    ];
 
 /*******************************************
   Utility functions
@@ -65,11 +80,12 @@ const sequence = (fns) => {
 /*******************************************
   Workouts functions
 ********************************************/  
-const countDown = ({ action, seconds }) => {
+const countDown = ({ action, seconds, nextAction }) => {
   return () => {  
     return new Promise(function (resolve) {
         showAction(action);
         showSecond(seconds);
+        showNextAction(nextAction);
         let timer = setInterval(() => {
           if(!isPaused) seconds--;
           showSecond(seconds);
@@ -87,6 +103,7 @@ const endWorkOut = () => {
     return new Promise(function (resolve) {
       showAction("Workout Complete");
       showSecond("");
+      showNextAction("");
       pause.style.visibility = 'hidden';
       resolve();
     });
@@ -94,9 +111,14 @@ const endWorkOut = () => {
 }
 
 const startWorkOut = (workout) => {
-  const workoutReady = [countDown({action: "Get Ready", seconds: 10})];
-  const workoutQueue = workout.map(exercise => countDown(exercise));
+  const workoutReady = [countDown({ action: "Get Ready", seconds: 10, nextAction: (workout[0]).action })];
+  const workoutQueue = workout.map((exercise, index, self) => {
+    const nextExercise = self[index + 1];
+    exercise.nextAction = nextExercise ? nextExercise.action : "last exercise";
+    return countDown(exercise);
+  });
   timer.style.visibility = 'visible';
+  isPaused = false;
   sequence(workoutReady.concat(workoutQueue, endWorkOut()));
 }
 
