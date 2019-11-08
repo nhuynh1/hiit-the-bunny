@@ -5,7 +5,7 @@ let isPaused = false;
 ********************************************/
 let notifySecondsToNextExercise = 3;
 let flashBackgroundOn = false;
-let notificationOn = false;
+let notificationOn = true;
   
 /*******************************************
   DOM elements
@@ -15,6 +15,7 @@ const timer = document.getElementById('timer');
 const timerSeconds = timer.querySelector('.timerSeconds');
 const timerAction = timer.querySelector('.timerAction');
 const timerNextAction = timer.querySelector('.timerNextAction');
+const notificationSound = timer.querySelector('audio#notification');
 
 /*******************************************
   Templating functions
@@ -29,7 +30,10 @@ const flashBackground = (background, duration = 300) => {
 }
 
 const playNotification = () => {
-  
+  if(!isPaused) {
+    notificationSound.currentTime = 0;
+    notificationSound.play();
+  }
 }
 
 const speakAction = () => {
@@ -42,8 +46,9 @@ const showAction = (action) => timerAction.textContent = action;
 
 const showSecond = (num) => {
   timerSeconds.textContent = num;
-  if(num <= notifySecondsToNextExercise && flashBackgroundOn){
-    flashBackground(timer);
+  if(num <= notifySecondsToNextExercise){
+    if(flashBackgroundOn) flashBackground(timer);
+    if(notificationOn) playNotification();
   }
 }
 
