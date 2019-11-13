@@ -15,7 +15,8 @@ const timer = document.getElementById('timer');
 const timerSeconds = timer.querySelector('.timerSeconds');
 const timerAction = timer.querySelector('.timerAction');
 const timerNextAction = timer.querySelector('.timerNextAction');
-const notificationSound = timer.querySelector('audio#notification');
+const notificationSound1 = timer.querySelector('audio#notification1');
+const notificationSound2 = timer.querySelector('audio#notification2');
 
 /*******************************************
   Templating functions
@@ -29,15 +30,23 @@ const flashBackground = (background, duration = 300) => {
   }
 }
 
-const playNotification = () => {
+const playNotification = (notificationSound) => {
   if(!isPaused) {
     notificationSound.currentTime = 0;
     notificationSound.play();
   }
 }
 
-const speakAction = () => {
-  
+const speakAction = (action, seconds = "") => {
+  if("speechSynthesis" in window && "SpeechSynthesisUtterance" in window){
+    const synth = window.speechSynthesis;
+    const utterThis = new SpeechSynthesisUtterance();
+    let speech = `${action} ${typeof seconds === "number" ? ': ' + seconds + ' seconds' : seconds}`;
+    utterThis.text = speech;
+    synth.speak(utterThis);  
+  } else {
+    console.warn("Speech Synthesis API is not available with your broswer. There will be no voice notification of each exercise.")
+  }
 }
 
 const showNextAction = (nextAction) => timerNextAction.textContent = ["", "last exercise"].includes(nextAction) ? nextAction : `Next: ${nextAction}`;
@@ -48,7 +57,10 @@ const showSecond = (num) => {
   timerSeconds.textContent = num;
   if(num <= notifySecondsToNextExercise){
     if(flashBackgroundOn) flashBackground(timer);
-    if(notificationOn) playNotification();
+    if(notificationOn) {
+      if(num !== 0) playNotification(notificationSound1);
+      else playNotification(notificationSound2);
+    }
   }
 }
 
@@ -58,11 +70,11 @@ const updateButton = (button, textContent) => button.textContent = textContent;
   Workouts data
 ********************************************/
 const workout = [
-        {action: "Jump Squats", seconds: 6}, 
-        {action: "Push-ups", seconds: 6},
-        {action: "Burpees", seconds: 6},
-        {action: "Rest", seconds: 2},
-        {action: "Jump Squats", seconds: 6}
+        {action: "Jump Squats", seconds: 60}, 
+        {action: "Push-ups", seconds: 60},
+        {action: "Burpees", seconds: 60},
+        {action: "Rest", seconds: 20},
+        {action: "Jump Squats", seconds: 60}
       ];
 //  , 
 //        {action: "Push-ups", seconds: 60},
@@ -89,6 +101,7 @@ const countDown = ({ action, seconds, nextAction }) => {
   return () => {  
     return new Promise(function (resolve) {
         showAction(action);
+        speakAction(action, seconds);
         showSecond(seconds);
         showNextAction(nextAction);
         let timer = setInterval(() => {
@@ -103,10 +116,11 @@ const countDown = ({ action, seconds, nextAction }) => {
   }
 }
 
-const endWorkOut = () => {
+const endWorkOut = (action = "Workout Complete") => {
   return () => {
     return new Promise(function (resolve) {
-      showAction("Workout Complete");
+      showAction(action);
+      speakAction(action);
       showSecond("");
       showNextAction("");
       pause.style.visibility = 'hidden';
