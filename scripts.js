@@ -37,11 +37,19 @@ const playNotification = (notificationSound) => {
   }
 }
 
+/*******************************************
+  Voice templating functions
+********************************************/
+/* TO DO: create speech templates */
+
+/* TO DO: refactor speakAction to be more generic */
+
 const speakAction = (action, seconds = "") => {
   if("speechSynthesis" in window && "SpeechSynthesisUtterance" in window){
     const synth = window.speechSynthesis;
     const utterThis = new SpeechSynthesisUtterance();
     let speech = `${action} ${typeof seconds === "number" ? ': ' + seconds + ' seconds' : seconds}`;
+    utterThis.rate = 1.3;
     utterThis.text = speech;
     synth.speak(utterThis);  
   } else {
@@ -53,14 +61,27 @@ const showNextAction = (nextAction) => timerNextAction.textContent = ["", "last 
 
 const showAction = (action) => timerAction.textContent = action;
 
-const showSecond = (num) => {
-  timerSeconds.textContent = num;
-  if(num <= notifySecondsToNextExercise){
+const showSecond = (second) => timerSeconds.textContent = second;
+
+const processSecond = (remainingSeconds, totalSeconds, nextAction) => {
+  showSecond(remainingSeconds);
+  if(remainingSeconds <= notifySecondsToNextExercise){
     if(flashBackgroundOn) flashBackground(timer);
     if(notificationOn) {
-      if(num !== 0) playNotification(notificationSound1);
+      if(remainingSeconds !== 0) playNotification(notificationSound1);
       else playNotification(notificationSound2);
     }
+  }
+  
+  if(remainingSeconds === 10) {
+    let speech;
+    if(totalSeconds > 10) {
+      speech = `You're almost done. ${nextAction === "last exercise" ? 'This is the' + nextAction : 'Next: ' + nextAction}`;
+    }
+    if(totalSeconds === 10) {
+      speech = `Next: ${nextAction}`;
+    }
+    speakAction(speech);
   }
 }
 
@@ -70,10 +91,10 @@ const updateButton = (button, textContent) => button.textContent = textContent;
   Workouts data
 ********************************************/
 const workout = [
-        {action: "Jump Squats", seconds: 60}, 
-        {action: "Push-ups", seconds: 60},
-        {action: "Burpees", seconds: 60},
-        {action: "Rest", seconds: 20},
+        {action: "Jump Squats", seconds: 20}, 
+        {action: "Push-ups", seconds: 20},
+        {action: "Burpees", seconds: 20},
+        {action: "Rest", seconds: 10},
         {action: "Jump Squats", seconds: 60}
       ];
 //  , 
@@ -100,14 +121,15 @@ const sequence = (fns) => {
 const countDown = ({ action, seconds, nextAction }) => {
   return () => {  
     return new Promise(function (resolve) {
+        let remainingSeconds = seconds;
         showAction(action);
-        speakAction(action, seconds);
-        showSecond(seconds);
+        speakAction(action, remainingSeconds);
+        processSecond(remainingSeconds, seconds, nextAction);
         showNextAction(nextAction);
         let timer = setInterval(() => {
-          if(!isPaused) seconds--;
-          showSecond(seconds);
-          if(seconds === 0){
+          if(!isPaused) remainingSeconds--;
+          processSecond(remainingSeconds, seconds, nextAction);
+          if(remainingSeconds === 0){
             clearInterval(timer);
             setTimeout(() => resolve(), 1000);
           }
