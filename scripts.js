@@ -1,4 +1,6 @@
 let isPaused = false;
+let isStarted = false;
+let isCurrentActionSkipped = false;
 
 /*******************************************
   Settings (to be queried from JSON or local storage)
@@ -37,18 +39,21 @@ const playNotification = (notificationSound) => {
   }
 }
 
-/*******************************************
-  Voice templating functions
-********************************************/
-/* TO DO: create speech templates */
+const getActionSpeech = (action, seconds = "") => {
+  return `${action}. ${typeof seconds === "number" ? `${seconds} seconds.` : seconds}`;
+}
 
-/* TO DO: refactor speakAction to be more generic */
+const getNextActionSpeech = (nextAction, totalSeconds) => {
+  if(totalSeconds > 10)
+    return `You're almost done. ${nextAction === "last exercise" ? `This is the ${nextAction}.` : `Next: ${nextAction}.`}`;
+  if(totalSeconds === 10)
+    return `Next: ${nextAction}`;
+} 
 
-const speakAction = (action, seconds = "") => {
+const speakAction = (speech = "") => {
   if("speechSynthesis" in window && "SpeechSynthesisUtterance" in window){
     const synth = window.speechSynthesis;
     const utterThis = new SpeechSynthesisUtterance();
-    let speech = `${action} ${typeof seconds === "number" ? ': ' + seconds + ' seconds' : seconds}`;
     utterThis.rate = 1.3;
     utterThis.text = speech;
     synth.speak(utterThis);  
@@ -64,6 +69,7 @@ const showAction = (action) => timerAction.textContent = action;
 const showSecond = (second) => timerSeconds.textContent = second;
 
 const processSecond = (remainingSeconds, totalSeconds, nextAction) => {
+  if(isPaused) return;
   showSecond(remainingSeconds);
   if(remainingSeconds <= notifySecondsToNextExercise){
     if(flashBackgroundOn) flashBackground(timer);
@@ -74,13 +80,7 @@ const processSecond = (remainingSeconds, totalSeconds, nextAction) => {
   }
   
   if(remainingSeconds === 10) {
-    let speech;
-    if(totalSeconds > 10) {
-      speech = `You're almost done. ${nextAction === "last exercise" ? 'This is the' + nextAction : 'Next: ' + nextAction}`;
-    }
-    if(totalSeconds === 10) {
-      speech = `Next: ${nextAction}`;
-    }
+    let speech = getNextActionSpeech(nextAction, totalSeconds);
     speakAction(speech);
   }
 }
@@ -90,22 +90,23 @@ const updateButton = (button, textContent) => button.textContent = textContent;
 /*******************************************
   Workouts data
 ********************************************/
+//const workout = [
+//        {action: "Bicep Curls", seconds: 30},
+//        {action: "Rest", seconds: 30},
+//        {action: "Lateral Shoulder Raises", seconds: 30},
+//        {action: "Rest", seconds: 30},
+//        {action: "Dumbbell Rows, Right Arm", seconds: 30},
+//        {action: "Rest", seconds: 10},
+//        {action: "Dumbbell Rows, Left Arm", seconds: 30}
+//      ];
+
 const workout = [
-        {action: "Jump Squats", seconds: 20}, 
-        {action: "Push-ups", seconds: 20},
-        {action: "Burpees", seconds: 20},
-        {action: "Rest", seconds: 10},
-        {action: "Jump Squats", seconds: 60}
+        {action: "Bicep Curls", seconds: 20},
+        {action: "Rest", seconds: 20},
+        {action: "Lateral Shoulder Raises", seconds: 20},
+        {action: "Rest", seconds: 20},
+        {action: "Dumbbell Rows, Right Arm", seconds: 20}
       ];
-//  , 
-//        {action: "Push-ups", seconds: 60},
-//        {action: "Burpees", seconds: 60},
-//        {action: "Rest", seconds: 20},
-//        {action: "Jump Squats", seconds: 60}, 
-//        {action: "Push-ups", seconds: 60},
-//        {action: "Burpees", seconds: 60},
-//        {action: "Rest", seconds: 20}
-//    ];
 
 /*******************************************
   Utility functions
@@ -121,15 +122,17 @@ const sequence = (fns) => {
 const countDown = ({ action, seconds, nextAction }) => {
   return () => {  
     return new Promise(function (resolve) {
+        isCurrentActionSkipped = false; // updated
         let remainingSeconds = seconds;
         showAction(action);
-        speakAction(action, remainingSeconds);
-        processSecond(remainingSeconds, seconds, nextAction);
         showNextAction(nextAction);
+        speakAction(getActionSpeech(action, remainingSeconds));
+        processSecond(remainingSeconds, seconds, nextAction);
+  
         let timer = setInterval(() => {
           if(!isPaused) remainingSeconds--;
           processSecond(remainingSeconds, seconds, nextAction);
-          if(remainingSeconds === 0){
+          if(remainingSeconds === 0 || isCurrentActionSkipped){ // skip action for testing
             clearInterval(timer);
             setTimeout(() => resolve(), 1000);
           }
@@ -146,6 +149,7 @@ const endWorkOut = (action = "Workout Complete") => {
       showSecond("");
       showNextAction("");
       pause.style.visibility = 'hidden';
+      isStarted = false;
       resolve();
     });
   }
@@ -160,6 +164,8 @@ const startWorkOut = (workout) => {
   });
   timer.style.visibility = 'visible';
   isPaused = false;
+  isStarted = true;
+  isCurrentActionSkipped = false; // skip action for testing
   sequence(workoutReady.concat(workoutQueue, endWorkOut()));
 }
 
@@ -168,7 +174,19 @@ const pauseWorkOut = () => {
   updateButton(pause, isPaused ? 'resume' : 'pause');
 }
 
+const skipAction = () => isCurrentActionSkipped = true;
+
+
 /*******************************************
-  Event listeners
+  Event listeners and handlers
 ********************************************/
-// nothing here yet
+const keyHandler = (e) => {
+  if(e.keyCode !== 32) return;
+  
+  if(!isStarted) 
+    startWorkOut(workout);
+  else 
+    pauseWorkOut();
+}
+
+document.addEventListener('keydown', keyHandler)
