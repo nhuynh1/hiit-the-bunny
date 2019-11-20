@@ -1,7 +1,3 @@
-let isPaused = false;
-let isStarted = false;
-let isCurrentActionSkipped = false;
-
 /*******************************************
   Settings (to be queried from JSON or local storage)
 ********************************************/
@@ -49,6 +45,8 @@ const getNextActionSpeech = (nextAction, totalSeconds) => {
   if(totalSeconds === 10)
     return `Next: ${nextAction}`;
 } 
+
+// speech needs to stop when skipping exercises otherwise the queue continues to speak
 
 const speakAction = (speech = "") => {
   if("speechSynthesis" in window && "SpeechSynthesisUtterance" in window){
@@ -119,63 +117,81 @@ const sequence = (fns) => {
 /*******************************************
   Workouts functions
 ********************************************/  
-const countDown = ({ action, seconds, nextAction }) => {
-  return () => {  
+
+let currentActionIndex = 0,
+    isPaused = false,
+    isStarted = false;
+const prevButton = document.querySelector('#prev'),
+      nextButton = document.querySelector('#next');
+
+const countDown = ({ action, seconds, nextAction}) => {
     return new Promise(function (resolve) {
-        isCurrentActionSkipped = false; // updated
         let remainingSeconds = seconds;
         showAction(action);
         showNextAction(nextAction);
         speakAction(getActionSpeech(action, remainingSeconds));
-        processSecond(remainingSeconds, seconds, nextAction);
-  
+        processSecond(remainingSeconds, seconds, nextAction); 
+      
         let timer = setInterval(() => {
           if(!isPaused) remainingSeconds--;
           processSecond(remainingSeconds, seconds, nextAction);
-          if(remainingSeconds === 0 || isCurrentActionSkipped){ // skip action for testing
+          
+          if(remainingSeconds === 0){
             clearInterval(timer);
+            currentActionIndex++;
             setTimeout(() => resolve(), 1000);
           }
         }, 1000);
+        
+        const resolveImmediately = () => {
+          clearInterval(timer);
+          resolve();
+        } 
+      
+        prevButton.onclick = () => {
+          currentActionIndex = Math.max(0, currentActionIndex - 1);
+          resolveImmediately();
+        }
+
+        nextButton.onclick = () => {
+          currentActionIndex++;
+          resolveImmediately();
+        }
       });
-  }
 }
 
 const endWorkOut = (action = "Workout Complete") => {
-  return () => {
-    return new Promise(function (resolve) {
-      showAction(action);
-      speakAction(action);
-      showSecond("");
-      showNextAction("");
-      pause.style.visibility = 'hidden';
-      isStarted = false;
-      resolve();
-    });
-  }
+  return new Promise(function (resolve) {
+    showAction(action);
+    speakAction(action);
+    showSecond("");
+    showNextAction("");
+    pause.style.visibility = 'hidden';
+    isStarted = false;
+    prevButton.onclick = undefined;
+    nextButton.onclick = undefined;
+    resolve();
+  });
 }
 
-const startWorkOut = (workout) => {
-  const workoutReady = [countDown({ action: "Get Ready", seconds: 10, nextAction: (workout[0]).action })];
-  const workoutQueue = workout.map((exercise, index, self) => {
-    const nextExercise = self[index + 1];
-    exercise.nextAction = nextExercise ? nextExercise.action : "last exercise";
-    return countDown(exercise);
-  });
+const startWorkOut = async () => {
+  currentActionIndex = 0;
   timer.style.visibility = 'visible';
   isPaused = false;
   isStarted = true;
-  isCurrentActionSkipped = false; // skip action for testing
-  sequence(workoutReady.concat(workoutQueue, endWorkOut()));
+  while(workout[currentActionIndex]){
+    let exercise = {...workout[currentActionIndex]};
+    let nextExercise = workout[currentActionIndex + 1];
+    exercise.nextAction = nextExercise ? nextExercise.action : "last exercise";
+    await countDown(exercise);
+  }
+  await endWorkOut();
 }
 
 const pauseWorkOut = () => {
   isPaused = !isPaused;
   updateButton(pause, isPaused ? 'resume' : 'pause');
 }
-
-const skipAction = () => isCurrentActionSkipped = true;
-
 
 /*******************************************
   Event listeners and handlers
