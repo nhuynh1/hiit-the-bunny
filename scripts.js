@@ -167,6 +167,8 @@ const endWorkOut = (action = "Workout Complete") => {
     showSecond("");
     showNextAction("");
     pause.style.visibility = 'hidden';
+    prevButton.style.visibility = 'hidden';
+    nextButton.style.visibility = 'hidden';
     isStarted = false;
     prevButton.onclick = undefined;
     nextButton.onclick = undefined;
@@ -175,15 +177,18 @@ const endWorkOut = (action = "Workout Complete") => {
 }
 
 const startWorkOut = async () => {
-  currentActionIndex = 0;
+  currentActionIndex = -1;
   timer.style.visibility = 'visible';
+  prevButton.style.visibility = 'visible';
+  nextButton.style.visibility = 'visible';
   isPaused = false;
   isStarted = true;
+  await countDown({action: "Get ready", seconds: 10, nextAction: (workout[0]).action});
   while(workout[currentActionIndex]){
     let exercise = {...workout[currentActionIndex]};
     let nextExercise = workout[currentActionIndex + 1];
     exercise.nextAction = nextExercise ? nextExercise.action : "last exercise";
-    await countDown(exercise);
+    await countDown(exercise); // capture the currentActionIndex from the Promise so we can take out the variable?
   }
   await endWorkOut();
 }
@@ -191,6 +196,10 @@ const startWorkOut = async () => {
 const pauseWorkOut = () => {
   isPaused = !isPaused;
   updateButton(pause, isPaused ? 'resume' : 'pause');
+}
+
+const closeTimer = () => {
+  timer.style.visibility = 'hidden';
 }
 
 /*******************************************
