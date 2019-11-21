@@ -80,6 +80,7 @@ const speakAction = (speech = "", synth, utterThis) => {
   if(!synth || !utterThis) return;
   utterThis.text = speech;
   synth.speak(utterThis);
+  if(isPaused) synth.pause();
 }
 
 const showNextAction = (nextAction) => $timerNextAction.textContent = ["", "last exercise"].includes(nextAction) ? nextAction : `Next: ${nextAction}`;
@@ -110,25 +111,33 @@ const updateButton = (button, textContent) => button.textContent = textContent;
 /*******************************************
   Workouts data
 ********************************************/
-//const workout = [
-//        {action: "Bicep Curls", seconds: 30},
-//        {action: "Rest", seconds: 30},
-//        {action: "Lateral Shoulder Raises", seconds: 30},
-//        {action: "Rest", seconds: 30},
-//        {action: "Dumbbell Rows, Right Arm", seconds: 30},
-//        {action: "Rest", seconds: 10},
-//        {action: "Dumbbell Rows, Left Arm", seconds: 30}
-//      ];
+const workoutArms = [
+        {action: "Bicep Curls", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Lateral Shoulder Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Dumbbell Rows, Right Arm", seconds: 30},
+        {action: "Rest", seconds: 10},
+        {action: "Dumbbell Rows, Left Arm", seconds: 30},
+        {action: "Rest", seconds: 10},
+        {action: "Bicep Curls", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Lateral Shoulder Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Dumbbell Rows, Right Arm", seconds: 30},
+        {action: "Rest", seconds: 10},
+        {action: "Dumbbell Rows, Left Arm", seconds: 30},
+      ];
 
-//const workout = [
-//        {action: "Bicep Curls", seconds: 20},
-//        {action: "Rest", seconds: 20},
-//        {action: "Lateral Shoulder Raises", seconds: 20},
-//        {action: "Rest", seconds: 20},
-//        {action: "Dumbbell Rows, Right Arm", seconds: 20}
-//      ];
+const workoutTest = [
+        {action: "Bicep Curls", seconds: 20},
+        {action: "Rest", seconds: 20},
+        {action: "Lateral Shoulder Raises", seconds: 20},
+        {action: "Rest", seconds: 20},
+        {action: "Dumbbell Rows, Right Arm", seconds: 20}
+      ];
 
-const workout = [
+const workoutLegs = [
         {action: "Goblet Squats", seconds: 30},
         {action: "Rest", seconds: 30},
         {action: "Glute Bridges", seconds: 30},
@@ -211,12 +220,11 @@ const endWorkOut = (action = "Workout Complete") => {
     isStarted = false;
     $prevButton.onclick = null;
     $nextButton.onclick = null;
-    $closeButton.onclick = null;
     resolve();
   });
 }
 
-const startWorkOut = async () => {
+const startWorkOut = async (workout) => {
   currentActionIndex = -1;
   $timer.style.visibility = 'visible';
   $timer.classList.remove('workout-ended');
@@ -239,7 +247,7 @@ const pauseWorkOut = () => {
     synth.pause();
   }
   else {
-    synth.resume();
+    if(synth.speaking) synth.resume();
   }
 }
 
@@ -247,10 +255,11 @@ const pauseWorkOut = () => {
   Event listeners and handlers
 ********************************************/
 const keyHandler = (e) => {
+  e.preventDefault();
   if(e.keyCode !== 32) return;
   
   if(!isStarted) 
-    startWorkOut(workout);
+    startWorkOut(workout); // will need to grab current workout eventually
   else 
     pauseWorkOut();
 }
