@@ -1,4 +1,29 @@
 /*******************************************
+  Initialization functions
+********************************************/
+const initializeSpeechSynthesis = () => {
+  if("speechSynthesis" in window && "SpeechSynthesisUtterance" in window){
+     const synth = window.speechSynthesis;
+     const utterThis = new SpeechSynthesisUtterance();
+     utterThis.rate = 1.3;
+     synth.cancel();
+     return {synth, utterThis};
+  }
+  else {
+    console.warn("Speech Synthesis API is not available with your broswer. There will be no voice notification of each exercise.");
+    return {synth: undefined, utterThis: undefined};
+  }
+}
+
+/*******************************************
+  Initialization variables
+********************************************/
+const {synth, utterThis} = initializeSpeechSynthesis();
+let currentActionIndex,
+    isPaused = false,
+    isStarted = false;
+
+/*******************************************
   Settings (to be queried from JSON or local storage)
 ********************************************/
 let notifySecondsToNextExercise = 3;
@@ -8,13 +33,18 @@ let notificationOn = true;
 /*******************************************
   DOM elements
 ********************************************/    
-const pause = document.getElementById('pause');
-const timer = document.getElementById('timer');
-const timerSeconds = timer.querySelector('.timerSeconds');
-const timerAction = timer.querySelector('.timerAction');
-const timerNextAction = timer.querySelector('.timerNextAction');
-const notificationSound1 = timer.querySelector('audio#notification1');
-const notificationSound2 = timer.querySelector('audio#notification2');
+const $timer = document.getElementById('timer');
+const $timerSeconds = $timer.querySelector('.timerSeconds');
+const $timerAction = $timer.querySelector('.timerAction');
+const $timerNextAction = $timer.querySelector('.timerNextAction');
+
+const $notificationSound1 = $timer.querySelector('audio#notification1'),
+      $notificationSound2 = $timer.querySelector('audio#notification2');
+
+const $prevButton = $timer.querySelector('#prev'),
+      $nextButton = $timer.querySelector('#next'),
+      $closeButton = $timer.querySelector('#end'),
+      $pauseButton = $timer.querySelector('#pause');
 
 /*******************************************
   Templating functions
@@ -46,40 +76,32 @@ const getNextActionSpeech = (nextAction, totalSeconds) => {
     return `Next: ${nextAction}`;
 } 
 
-// speech needs to stop when skipping exercises otherwise the queue continues to speak
-
-const speakAction = (speech = "") => {
-  if("speechSynthesis" in window && "SpeechSynthesisUtterance" in window){
-    const synth = window.speechSynthesis;
-    const utterThis = new SpeechSynthesisUtterance();
-    utterThis.rate = 1.3;
-    utterThis.text = speech;
-    synth.speak(utterThis);  
-  } else {
-    console.warn("Speech Synthesis API is not available with your broswer. There will be no voice notification of each exercise.")
-  }
+const speakAction = (speech = "", synth, utterThis) => {
+  if(!synth || !utterThis) return;
+  utterThis.text = speech;
+  synth.speak(utterThis);
 }
 
-const showNextAction = (nextAction) => timerNextAction.textContent = ["", "last exercise"].includes(nextAction) ? nextAction : `Next: ${nextAction}`;
+const showNextAction = (nextAction) => $timerNextAction.textContent = ["", "last exercise"].includes(nextAction) ? nextAction : `Next: ${nextAction}`;
 
-const showAction = (action) => timerAction.textContent = action;
+const showAction = (action) => $timerAction.textContent = action;
 
-const showSecond = (second) => timerSeconds.textContent = second;
+const showSecond = (second) => $timerSeconds.textContent = second;
 
 const processSecond = (remainingSeconds, totalSeconds, nextAction) => {
-  if(isPaused) return;
   showSecond(remainingSeconds);
+  if(isPaused) return;
   if(remainingSeconds <= notifySecondsToNextExercise){
-    if(flashBackgroundOn) flashBackground(timer);
+    if(flashBackgroundOn) flashBackground($timer);
     if(notificationOn) {
-      if(remainingSeconds !== 0) playNotification(notificationSound1);
-      else playNotification(notificationSound2);
+      if(remainingSeconds !== 0) playNotification($notificationSound1);
+      else playNotification($notificationSound2);
     }
   }
   
   if(remainingSeconds === 10) {
     let speech = getNextActionSpeech(nextAction, totalSeconds);
-    speakAction(speech);
+    speakAction(speech, synth, utterThis);
   }
 }
 
@@ -98,38 +120,50 @@ const updateButton = (button, textContent) => button.textContent = textContent;
 //        {action: "Dumbbell Rows, Left Arm", seconds: 30}
 //      ];
 
+//const workout = [
+//        {action: "Bicep Curls", seconds: 20},
+//        {action: "Rest", seconds: 20},
+//        {action: "Lateral Shoulder Raises", seconds: 20},
+//        {action: "Rest", seconds: 20},
+//        {action: "Dumbbell Rows, Right Arm", seconds: 20}
+//      ];
+
 const workout = [
-        {action: "Bicep Curls", seconds: 20},
-        {action: "Rest", seconds: 20},
-        {action: "Lateral Shoulder Raises", seconds: 20},
-        {action: "Rest", seconds: 20},
-        {action: "Dumbbell Rows, Right Arm", seconds: 20}
+        {action: "Goblet Squats", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Glute Bridges", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Deadlift with Dumbbells", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Calf Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Goblet Squats", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Glute Bridges", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Deadlift with Dumbbells", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Calf Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Goblet Squats", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Glute Bridges", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Deadlift with Dumbbells", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Calf Raises", seconds: 30}
       ];
 
-/*******************************************
-  Utility functions
-********************************************/
-const sequence = (fns) => {
-  var fn = fns.shift();
-  return fn ? fn().then(() => sequence(fns)) : Promise.resolve(undefined);
-}
 
 /*******************************************
   Workouts functions
 ********************************************/  
-
-let currentActionIndex = 0,
-    isPaused = false,
-    isStarted = false;
-const prevButton = document.querySelector('#prev'),
-      nextButton = document.querySelector('#next');
-
 const countDown = ({ action, seconds, nextAction}) => {
     return new Promise(function (resolve) {
         let remainingSeconds = seconds;
         showAction(action);
         showNextAction(nextAction);
-        speakAction(getActionSpeech(action, remainingSeconds));
+        speakAction(getActionSpeech(action, remainingSeconds), synth, utterThis);
         processSecond(remainingSeconds, seconds, nextAction); 
       
         let timer = setInterval(() => {
@@ -144,18 +178,25 @@ const countDown = ({ action, seconds, nextAction}) => {
         }, 1000);
         
         const resolveImmediately = () => {
+          synth.cancel();
           clearInterval(timer);
           resolve();
         } 
       
-        prevButton.onclick = () => {
+        $prevButton.onclick = () => {
           currentActionIndex = Math.max(0, currentActionIndex - 1);
           resolveImmediately();
         }
 
-        nextButton.onclick = () => {
+        $nextButton.onclick = () => {
           currentActionIndex++;
           resolveImmediately();
+        }
+        
+        $closeButton.onclick = () => {
+          currentActionIndex = undefined;
+          resolveImmediately();
+          $timer.style.visibility = 'hidden';
         }
       });
 }
@@ -163,24 +204,22 @@ const countDown = ({ action, seconds, nextAction}) => {
 const endWorkOut = (action = "Workout Complete") => {
   return new Promise(function (resolve) {
     showAction(action);
-    speakAction(action);
+    speakAction(action, synth, utterThis);
     showSecond("");
     showNextAction("");
-    pause.style.visibility = 'hidden';
-    prevButton.style.visibility = 'hidden';
-    nextButton.style.visibility = 'hidden';
+    $timer.classList.add('workout-ended');
     isStarted = false;
-    prevButton.onclick = undefined;
-    nextButton.onclick = undefined;
+    $prevButton.onclick = null;
+    $nextButton.onclick = null;
+    $closeButton.onclick = null;
     resolve();
   });
 }
 
 const startWorkOut = async () => {
   currentActionIndex = -1;
-  timer.style.visibility = 'visible';
-  prevButton.style.visibility = 'visible';
-  nextButton.style.visibility = 'visible';
+  $timer.style.visibility = 'visible';
+  $timer.classList.remove('workout-ended');
   isPaused = false;
   isStarted = true;
   await countDown({action: "Get ready", seconds: 10, nextAction: (workout[0]).action});
@@ -190,16 +229,18 @@ const startWorkOut = async () => {
     exercise.nextAction = nextExercise ? nextExercise.action : "last exercise";
     await countDown(exercise); // capture the currentActionIndex from the Promise so we can take out the variable?
   }
-  await endWorkOut();
+  if(currentActionIndex) await endWorkOut();
 }
 
 const pauseWorkOut = () => {
   isPaused = !isPaused;
-  updateButton(pause, isPaused ? 'resume' : 'pause');
-}
-
-const closeTimer = () => {
-  timer.style.visibility = 'hidden';
+  updateButton($pauseButton, isPaused ? 'resume' : 'pause');
+  if(isPaused){
+    synth.pause();
+  }
+  else {
+    synth.resume();
+  }
 }
 
 /*******************************************
