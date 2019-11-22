@@ -19,8 +19,7 @@ const initializeSpeechSynthesis = () => {
   Initialization variables
 ********************************************/
 const {synth, utterThis} = initializeSpeechSynthesis();
-let currentActionIndex,
-    isPaused = false,
+let isPaused = false,
     isStarted = false;
 
 /*******************************************
@@ -167,7 +166,7 @@ const workoutLegs = [
 /*******************************************
   Workouts functions
 ********************************************/  
-const countDown = ({ action, seconds, nextAction}) => {
+const countDown = ({ action, seconds, nextAction}, currentActionIndex) => {
     return new Promise(function (resolve) {
         let remainingSeconds = seconds;
         showAction(action);
@@ -182,14 +181,14 @@ const countDown = ({ action, seconds, nextAction}) => {
           if(remainingSeconds === 0){
             clearInterval(timer);
             currentActionIndex++;
-            setTimeout(() => resolve(), 1000);
+            setTimeout(() => resolve(currentActionIndex), 1000);
           }
         }, 1000);
         
         const resolveImmediately = () => {
           synth.cancel();
           clearInterval(timer);
-          resolve();
+          resolve(currentActionIndex);
         } 
       
         $prevButton.onclick = () => {
@@ -225,17 +224,20 @@ const endWorkOut = (action = "Workout Complete") => {
 }
 
 const startWorkOut = async (workout) => {
-  currentActionIndex = -1;
+  let currentActionIndex = -1;
+
   $timer.style.visibility = 'visible';
   $timer.classList.remove('workout-ended');
   isPaused = false;
   isStarted = true;
-  await countDown({action: "Get ready", seconds: 10, nextAction: (workout[0]).action});
+  
+  currentActionIndex = await countDown({action: "Get ready", seconds: 10, nextAction: (workout[0]).action}, currentActionIndex);
+
   while(workout[currentActionIndex]){
     let exercise = {...workout[currentActionIndex]};
     let nextExercise = workout[currentActionIndex + 1];
     exercise.nextAction = nextExercise ? nextExercise.action : "last exercise";
-    await countDown(exercise); // capture the currentActionIndex from the Promise so we can take out the variable?
+    currentActionIndex = await countDown(exercise, currentActionIndex);
   }
   if(currentActionIndex) await endWorkOut();
 }
@@ -244,7 +246,7 @@ const pauseWorkOut = () => {
   isPaused = !isPaused;
   updateButton($pauseButton, isPaused ? 'resume' : 'pause');
   if(isPaused){
-    synth.pause();
+    if(synth.speaking) synth.pause();
   }
   else {
     if(synth.speaking) synth.resume();
@@ -259,7 +261,7 @@ const keyHandler = (e) => {
   if(e.keyCode !== 32) return;
   
   if(!isStarted) 
-    startWorkOut(workout); // will need to grab current workout eventually
+    startWorkOut(workoutTest); // will need to grab current workout eventually
   else 
     pauseWorkOut();
 }
