@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HIIT Timer</title>
+  <link href="https://fonts.googleapis.com/css?family=Rubik:300,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Archivo+Narrow&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Telex&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+  <body>
+    <div class="wrapper">
+      
+        <div class="title">
+          <h1></h1>
+          <p></p>
+        </div>
+      
+        <div class="exercises">
+          <template id="exercise-action-template">
+            <div class="action">
+              <h2></h2>
+              <span></span>
+              <div class="view-details-button">>
+              </div>
+              <div class="instruction">
+                <img src="">
+                <p></p>
+              </div>
+            </div>
+          </template>
+        </div>
+      
+      <footer>
+        <span>Just a little HIIT timer</span>
+        <span>Created by Nancy Huynh</span>
+      </footer>
+    
+    </div>
+    
+    <script>
+      const sampleWorkout =
+        {
+          name: "Test Workout",
+          description: "Just a test workout for testing the app",
+          exercises: [{action: "Bicep Curls", seconds: 20, instruction: "Stand holding a dumbbell in each hand with your arms hanging by your sides. Ensure your elbows are close to your torso and your palms facing forward. Keeping your upper arms stationary, exhale as you curl the weights up to shoulder level while contracting your biceps.", video: '', image: 'https://hips.hearstapps.com/ame-prod-menshealth-assets.s3.amazonaws.com/main/assets/bicep-curl.gif?resize=980:*'}, {action: "Rest", seconds: 20}, {action: "Lateral Shoulder Raises", seconds: 20, instruction: "Standing in a shoulder-width stance, grab a pair of dumbbells with palms facing inward and let them hang at your sides. Raise your arms out to the sides until they're at shoulder level. Pause, then lower the weights back to the starting position.", video: '', image: 'https://cdn-ami-drupal.heartyhosting.com/sites/muscleandfitness.com/files/styles/188x188/public/studio/906/906_B.jpg?itok=qvsI1NvC'}]
+        }
+      
+      const titleContainer = document.querySelector('.title');
+      titleContainer.querySelector('h1').textContent = sampleWorkout.name;
+      titleContainer.querySelector('p').textContent = sampleWorkout.description;
+      
+      const exercisesContainer = document.querySelector('.exercises');
+      sampleWorkout.exercises.forEach(exercise => {
+        const template = document.querySelector('#exercise-action-template').content.cloneNode(true);
+        template.querySelector('.action h2').textContent = exercise.action;
+        template.querySelector('.action span').textContent = `${exercise.seconds} seconds`;
+        template.querySelector('.instruction p').textContent = exercise.instruction;
+        template.querySelector('.instruction img').setAttribute('src', exercise.image);
+        if(!exercise.hasOwnProperty('instruction')){
+          template.querySelector('.instruction').remove();
+          template.querySelector('.view-details-button').remove();
+        }
+        exercisesContainer.insertBefore(template, document.querySelector('#exercise-action-template'));
+      })
+    </script>
+  </body>
+</html>
