@@ -21,7 +21,7 @@
             <div class="action">
               <h2></h2>
               <span></span>
-              <div class="view-details-button">>
+              <div class="view-details-button">
               </div>
               <div class="instruction">
                 <img src="">
@@ -39,6 +39,12 @@
     </div>
     
     <script>
+      const getWorkoutIdFromUrl = () => {
+        const urlParams = new URLSearchParams(document.location.search);
+        return urlParams.has('workout') ? urlParams.get('workout') : undefined;
+      }
+      
+      // TO DO: get the workout from json based on workout id
       const sampleWorkout =
         {
           name: "Test Workout",
@@ -51,18 +57,33 @@
       titleContainer.querySelector('p').textContent = sampleWorkout.description;
       
       const exercisesContainer = document.querySelector('.exercises');
-      sampleWorkout.exercises.forEach(exercise => {
+      sampleWorkout.exercises.forEach((exercise, index) => {
         const template = document.querySelector('#exercise-action-template').content.cloneNode(true);
         template.querySelector('.action h2').textContent = exercise.action;
         template.querySelector('.action span').textContent = `${exercise.seconds} seconds`;
         template.querySelector('.instruction p').textContent = exercise.instruction;
         template.querySelector('.instruction img').setAttribute('src', exercise.image);
+        template.querySelector('.view-details-button').setAttribute('id', index);
+        template.querySelector('.instruction').dataset.instruction = index;
         if(!exercise.hasOwnProperty('instruction')){
           template.querySelector('.instruction').remove();
           template.querySelector('.view-details-button').remove();
         }
         exercisesContainer.insertBefore(template, document.querySelector('#exercise-action-template'));
       })
+      
+      document.addEventListener('click', (e) => {
+        // TO DO: async query for description and image only if expanded
+        if(e.target.matches('.view-details-button')) {
+          e.preventDefault();
+          const id = e.target.getAttribute('id');
+          e.target.classList.toggle('active');
+          document.querySelector(`[data-instruction='${id}']`).classList.toggle('active');
+        } 
+        else {
+          return;
+        }
+      });
     </script>
   </body>
 </html>
