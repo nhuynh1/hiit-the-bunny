@@ -49,7 +49,7 @@
         {
           name: "Test Workout",
           description: "Just a test workout for testing the app",
-          exercises: [{action: "Bicep Curls", seconds: 20, instruction: "Stand holding a dumbbell in each hand with your arms hanging by your sides. Ensure your elbows are close to your torso and your palms facing forward. Keeping your upper arms stationary, exhale as you curl the weights up to shoulder level while contracting your biceps.", video: '', image: 'https://hips.hearstapps.com/ame-prod-menshealth-assets.s3.amazonaws.com/main/assets/bicep-curl.gif?resize=980:*'}, {action: "Rest", seconds: 20}, {action: "Lateral Shoulder Raises", seconds: 20, instruction: "Standing in a shoulder-width stance, grab a pair of dumbbells with palms facing inward and let them hang at your sides. Raise your arms out to the sides until they're at shoulder level. Pause, then lower the weights back to the starting position.", video: '', image: 'https://cdn-ami-drupal.heartyhosting.com/sites/muscleandfitness.com/files/styles/188x188/public/studio/906/906_B.jpg?itok=qvsI1NvC'}]
+          exercises: [{id: 1, action: "Bicep Curls", seconds: 20}, {action: "Rest", seconds: 20}, {id: 2, action: "Lateral Shoulder Raises", seconds: 20}]
         }
       
       const titleContainer = document.querySelector('.title');
@@ -61,29 +61,40 @@
         const template = document.querySelector('#exercise-action-template').content.cloneNode(true);
         template.querySelector('.action h2').textContent = exercise.action;
         template.querySelector('.action span').textContent = `${exercise.seconds} seconds`;
-        template.querySelector('.instruction p').textContent = exercise.instruction;
-        template.querySelector('.instruction img').setAttribute('src', exercise.image);
         template.querySelector('.view-details-button').setAttribute('id', index);
+        template.querySelector('.view-details-button').dataset.action = exercise.id;
         template.querySelector('.instruction').dataset.instruction = index;
-        if(!exercise.hasOwnProperty('instruction')){
+        if(!exercise.hasOwnProperty('id')){
           template.querySelector('.instruction').remove();
           template.querySelector('.view-details-button').remove();
         }
         exercisesContainer.insertBefore(template, document.querySelector('#exercise-action-template'));
       })
       
-      document.addEventListener('click', (e) => {
-        // TO DO: async query for description and image only if expanded
+      const accordionHandler = async (e) => {
         if(e.target.matches('.view-details-button')) {
           e.preventDefault();
           const id = e.target.getAttribute('id');
+          const actionId = e.target.dataset.action;
+          
+          const feed = await fetch('feeds/exercises.json');
+          const json = await feed.json();
+          const exercise = json[actionId] || {};
+          
+          const instructionDiv = document.querySelector(`[data-instruction='${id}']`);
+          instructionDiv.querySelector('p').textContent = exercise.hasOwnProperty('instruction') ? 
+            exercise.instruction : "";
+          instructionDiv.querySelector('img').src = exercise.hasOwnProperty('image') ? 
+            exercise.image : "";
+          
           e.target.classList.toggle('active');
-          document.querySelector(`[data-instruction='${id}']`).classList.toggle('active');
+          instructionDiv.classList.toggle('active');
         } 
         else {
           return;
         }
-      });
+      }
+      document.addEventListener('click', accordionHandler);
     </script>
   </body>
 </html>
