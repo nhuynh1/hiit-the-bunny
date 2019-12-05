@@ -21,6 +21,7 @@ const initializeSpeechSynthesis = () => {
 const {synth, utterThis} = initializeSpeechSynthesis();
 let isPaused = false,
     isStarted = false;
+let noSleep = new NoSleep();
 
 /*******************************************
   Settings (to be queried from JSON or local storage)
@@ -28,10 +29,10 @@ let isPaused = false,
 let notifySecondsToNextExercise = 3;
 let flashBackgroundOn = false;
 let notificationOn = true;
-  
+
 /*******************************************
   DOM elements
-********************************************/    
+********************************************/
 const $timer = document.getElementById('timer');
 const $timerSeconds = $timer.querySelector('.timerSeconds');
 const $timerAction = $timer.querySelector('.timerAction');
@@ -44,6 +45,14 @@ const $prevButton = $timer.querySelector('#prev'),
       $nextButton = $timer.querySelector('#next'),
       $closeButton = $timer.querySelector('#end'),
       $pauseButton = $timer.querySelector('#pause');
+
+const $workoutTemplate = document.querySelector('#workouts-template'),
+      $workoutsContainer = document.querySelector('.exercises');
+
+/*******************************************
+  Utility functions
+********************************************/
+const roundToOneDecimal = (n) => Math.round(n * 10) / 10;
 
 /*******************************************
   Templating functions
@@ -73,7 +82,7 @@ const getNextActionSpeech = (nextAction, totalSeconds) => {
     return `You're almost done. ${nextAction === "last exercise" ? `This is the ${nextAction}.` : `Next: ${nextAction}.`}`;
   if(totalSeconds === 10)
     return `Next: ${nextAction}`;
-} 
+}
 
 const speakAction = (speech = "", synth, utterThis) => {
   if(!synth || !utterThis) return;
@@ -98,7 +107,7 @@ const processSecond = (remainingSeconds, totalSeconds, nextAction) => {
       else playNotification($notificationSound2);
     }
   }
-  
+
   if(remainingSeconds === 10) {
     let speech = getNextActionSpeech(nextAction, totalSeconds);
     speakAction(speech, synth, utterThis);
@@ -106,6 +115,18 @@ const processSecond = (remainingSeconds, totalSeconds, nextAction) => {
 }
 
 const updateButton = (button, textContent) => button.textContent = textContent;
+
+const listWorkouts = (workouts, workoutNames, template) => {
+  workouts.forEach((workout, index, self) => {
+    const workoutDuration = totalWorkoutDuration(workout);
+    const workoutTemplate = template.content.cloneNode(true);
+    workoutTemplate.querySelector('.action h2').textContent = workoutNames[index];
+    workoutTemplate.querySelector('.action span').textContent = `${roundToOneDecimal(workoutDuration.total)} minutes ∙ ${roundToOneDecimal(workoutDuration.on)} minutes on ∙ ${roundToOneDecimal(workoutDuration.rest)} minutes rest`;
+    // link to exercise list page workout.html with parameter with workout id...
+    workoutTemplate.querySelector('.start-button button').dataset.workoutid = index;
+    $workoutsContainer.insertBefore(workoutTemplate, template);
+  });
+}
 
 /*******************************************
   Workouts data
@@ -118,7 +139,15 @@ const workoutArms = [
         {action: "Dumbbell Rows, Right Arm", seconds: 30},
         {action: "Rest", seconds: 10},
         {action: "Dumbbell Rows, Left Arm", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Bicep Curls", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Lateral Shoulder Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Dumbbell Rows, Right Arm", seconds: 30},
         {action: "Rest", seconds: 10},
+        {action: "Dumbbell Rows, Left Arm", seconds: 30},
+        {action: "Rest", seconds: 30},
         {action: "Bicep Curls", seconds: 30},
         {action: "Rest", seconds: 30},
         {action: "Lateral Shoulder Raises", seconds: 30},
@@ -162,35 +191,62 @@ const workoutLegs = [
         {action: "Calf Raises", seconds: 30}
       ];
 
+const workoutShoulders = [
+        {action: "Lateral Shoulder Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Tricep Dips", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Dumbbell Front Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Overhead Tricep Extensions", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Lateral Shoulder Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Tricep Dips", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Dumbbell Front Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Overhead Tricep Extensions", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Lateral Shoulder Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Tricep Dips", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Dumbbell Front Raises", seconds: 30},
+        {action: "Rest", seconds: 30},
+        {action: "Overhead Tricep Extensions", seconds: 30}
+]
 
+const workouts = [workoutLegs, workoutArms, workoutShoulders, workoutTest];
+const workoutsTitles = ["Girl Power Legs", "Bunny Arms", "Bunny Shoulders", "For Testing"];
 /*******************************************
   Workouts functions
-********************************************/  
+********************************************/
 const countDown = ({ action, seconds, nextAction}, currentActionIndex) => {
     return new Promise(function (resolve) {
         let remainingSeconds = seconds;
         showAction(action);
         showNextAction(nextAction);
         speakAction(getActionSpeech(action, remainingSeconds), synth, utterThis);
-        processSecond(remainingSeconds, seconds, nextAction); 
-      
+        processSecond(remainingSeconds, seconds, nextAction);
+
         let timer = setInterval(() => {
           if(!isPaused) remainingSeconds--;
           processSecond(remainingSeconds, seconds, nextAction);
-          
+
           if(remainingSeconds === 0){
             clearInterval(timer);
             currentActionIndex++;
             setTimeout(() => resolve(currentActionIndex), 1000);
           }
         }, 1000);
-        
+
         const resolveImmediately = () => {
           synth.cancel();
           clearInterval(timer);
           resolve(currentActionIndex);
-        } 
-      
+        }
+
         $prevButton.onclick = () => {
           currentActionIndex = Math.max(0, currentActionIndex - 1);
           resolveImmediately();
@@ -200,16 +256,17 @@ const countDown = ({ action, seconds, nextAction}, currentActionIndex) => {
           currentActionIndex++;
           resolveImmediately();
         }
-        
+
         $closeButton.onclick = () => {
           currentActionIndex = undefined;
           resolveImmediately();
+          noSleep.disable();
           $timer.style.visibility = 'hidden';
         }
       });
 }
 
-const endWorkOut = (action = "Workout Complete") => {
+const endWorkOut = (action = "Workout complete. Good job!") => {
   return new Promise(function (resolve) {
     showAction(action);
     speakAction(action, synth, utterThis);
@@ -219,6 +276,7 @@ const endWorkOut = (action = "Workout Complete") => {
     isStarted = false;
     $prevButton.onclick = null;
     $nextButton.onclick = null;
+    noSleep.disable();
     resolve();
   });
 }
@@ -230,7 +288,7 @@ const startWorkOut = async (workout) => {
   $timer.classList.remove('workout-ended');
   isPaused = false;
   isStarted = true;
-  
+
   currentActionIndex = await countDown({action: "Get ready", seconds: 10, nextAction: (workout[0]).action}, currentActionIndex);
 
   while(workout[currentActionIndex]){
@@ -253,17 +311,48 @@ const pauseWorkOut = () => {
   }
 }
 
+const totalWorkoutDuration = (workout = []) => {
+  const duration = workout.reduce((total, exercise) => {
+                      if(exercise.action.toLowerCase() === "rest"){
+                        total.rest += exercise.seconds / 60;
+                      } else {
+                        total.on += exercise.seconds / 60;
+                      }
+                      return total;
+                  }, {rest: 0, on: 0});
+  duration.total = duration.on + duration.rest;
+  return duration;
+}
+
 /*******************************************
   Event listeners and handlers
 ********************************************/
 const keyHandler = (e) => {
   e.preventDefault();
   if(e.keyCode !== 32) return;
-  
-  if(!isStarted) 
+
+  if(!isStarted){
     startWorkOut(workoutTest); // will need to grab current workout eventually
-  else 
+    noSleep.enable();
+  }
+  else
     pauseWorkOut();
 }
 
-document.addEventListener('keydown', keyHandler)
+const startClick = (e) => {
+  if(!e.target.matches('.start-button button')) return 
+  startWorkOut(workouts[e.target.dataset.workoutid]);
+  noSleep.enable();
+}
+
+const clickHandler = (e) => {
+  startClick(e);
+}
+
+document.addEventListener('keydown', keyHandler);
+document.addEventListener('click', clickHandler);
+
+/*******************************************
+  Load page data
+********************************************/
+listWorkouts(workouts, workoutsTitles, $workoutTemplate);
