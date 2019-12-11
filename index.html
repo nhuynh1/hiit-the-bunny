@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div class="wrapper">
     <div class="title">
       <h1>Workouts</h1>
@@ -20,65 +19,15 @@
         <div class="action">
         <h2></h2>
         <span></span>
-        <div class="start-button">
-          <button>Start</button>
-        </div>
+        <a href=''>Workout details</a>
       </div>
       </template>
-<!--
-      <div class="action">
-        <h2>Girl Power Legs</h2>
-        <span>11.5 minutes ∙ 6 minutes on ∙ 5.5 minutes rest</span>
-        <div class="start-button">
-          <button onclick="startWorkOut(workoutLegs)">Start</button>
-        </div>
-      </div>
-      <div class="action">
-        <h2>Bunny Arms</h2>
-        <span>6.5 minutes ∙ 4 minutes on ∙ 2.5 minutes rest</span>
-        <div class="start-button">
-          <button onclick="startWorkOut(workoutArms)">Start</button>
-        </div>
-      </div>
-      <div class="action">
-        <h2>Bunny Shoulders</h2>
-        <span>11.5 minutes ∙ 6 minutes ∙ 5.5 minutes rest</span>
-        <div class="start-button">
-          <button onclick="startWorkOut(workoutShoulders)">Start</button>
-        </div>
-      </div>
-      <div class="action">
-        <h2>Test</h2>
-        <span>1.67 minutes ∙ 1 minutes ∙ 0.67 minutes rest</span>
-        <div class="start-button">
-          <button onclick="startWorkOut(workoutTest)">Start</button>
-        </div>
-      </div>
--->
-      <!--      <button onclick="startWorkOut(workout)" class="button">start</button>-->
     </div>
     <footer>
       <span>Just a little HIIT timer</span>
       <span>Created by Nancy Huynh</span>
     </footer>
   </div>
-  <div class="wrapper" id="timer">
-      <div class="close-button-wrap"><button id="end" class="skip-button"></button></div>
-      <span class="timerAction">xxx</span>
-      <span class="timerSeconds">12</span>
-      
-      <div class="button-wrap">
-        <button id="prev" class="skip-button"></button>
-        <button onclick="pauseWorkOut()" class="button" id="pause">pause</button>
-        <button id="next" class="skip-button"></button>
-      </div>
-    
-      <span class="timerNextAction">xxx</span>
-      <!-- sound from: https://freesound.org/people/gurie/sounds/368779/ -->
-      <audio src="sounds/beep.wav" id="notification1"></audio>
-      <audio src="sounds/beep-2.wav" id="notification2"></audio>
-  </div>
-  
   <script src="NoSleep.min.js"></script>
   <script src="scripts.js"></script>
 </body>

@@ -1,0 +1,108 @@
+{
+	"name": "Chest & Back",
+	"id": 0,
+	"description": "Towards a strong core so you can rock it!",
+	"exercises": [{
+		"id": 3,
+		"action": "Dumbbell Rows, Right Arm",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 10
+	}, {
+		"id": 3,
+		"action": "Dumbbell Rows, Left Arm",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 4,
+		"action": "Dumbbell Chest Presses",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 5,
+		"action": "Bentover Reverse Flye",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 6,
+		"action": "Inclined Push-ups",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 3,
+		"action": "Dumbbell Rows, Right Arm",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 10
+	}, {
+		"id": 3,
+		"action": "Dumbbell Rows, Left Arm",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 4,
+		"action": "Dumbbell Chest Presses",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 5,
+		"action": "Bentover Reverse Flye",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 6,
+		"action": "Inclined Push-ups",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 3,
+		"action": "Dumbbell Rows, Right Arm",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 10
+	}, {
+		"id": 3,
+		"action": "Dumbbell Rows, Left Arm",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 4,
+		"action": "Dumbbell Chest Presses",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 5,
+		"action": "Bentover Reverse Flye",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 6,
+		"action": "Inclined Push-ups",
+		"seconds": 30
+	}]
+}

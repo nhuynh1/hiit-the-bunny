@@ -1,0 +1,87 @@
+{
+	"name": "Girl Power Legs",
+	"id": 0,
+	"description": "Don't forget leg day!",
+	"exercises": [{
+		"id": 7,
+		"action": "Goblet Squats",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 8,
+		"action": "Glute Bridges",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 9,
+		"action": "Deadlift with Dumbbells",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 10,
+		"action": "Calf Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Goblet Squats",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 8,
+		"action": "Glute Bridges",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 9,
+		"action": "Deadlift with Dumbbells",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 10,
+		"action": "Calf Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Goblet Squats",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 8,
+		"action": "Glute Bridges",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 9,
+		"action": "Deadlift with Dumbbells",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 10,
+		"action": "Calf Raises",
+		"seconds": 30
+	}]
+}

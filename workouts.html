@@ -10,12 +10,11 @@
 </head>
   <body>
     <div class="wrapper">
-      
         <div class="title">
           <h1></h1>
           <p></p>
+          <button class="start-button">start</button>
         </div>
-      
         <div class="exercises">
           <template id="exercise-action-template">
             <div class="action">
@@ -30,71 +29,140 @@
             </div>
           </template>
         </div>
-      
       <footer>
         <span>Just a little HIIT timer</span>
         <span>Created by Nancy Huynh</span>
       </footer>
-    
     </div>
     
+    <!-- Timer layer -->
+    <div class="wrapper" id="timer">
+      <div class="close-button-wrap"><button id="end" class="skip-button"></button></div>
+      <span class="timerAction">xxx</span>
+      <span class="timerSeconds">12</span>
+      
+      <div class="button-wrap">
+        <button id="prev" class="skip-button"></button>
+        <button onclick="pauseWorkOut()" class="button" id="pause">pause</button>
+        <button id="next" class="skip-button"></button>
+      </div>
+    
+      <span class="timerNextAction">xxx</span>
+      <!-- sound from: https://freesound.org/people/gurie/sounds/368779/ -->
+      <audio src="sounds/beep.wav" id="notification1"></audio>
+      <audio src="sounds/beep-2.wav" id="notification2"></audio>
+  </div>
+  
+  <script src="NoSleep.min.js"></script>
+  <script src="workoutFunctions.js"></script>
     <script>
+
       const getWorkoutIdFromUrl = () => {
         const urlParams = new URLSearchParams(document.location.search);
         return urlParams.has('workout') ? urlParams.get('workout') : undefined;
       }
-      
-      // TO DO: get the workout from json based on workout id
-      const sampleWorkout =
-        {
-          name: "Test Workout",
-          description: "Just a test workout for testing the app",
-          exercises: [{id: 1, action: "Bicep Curls", seconds: 20}, {action: "Rest", seconds: 20}, {id: 2, action: "Lateral Shoulder Raises", seconds: 20}]
+
+      const getWorkoutDetails = async (id = 0) => {
+        try {
+          const feed = await fetch(`feeds/workout-${id}.json`);
+          return await feed.json();
+        } catch (error) {
+          console.error(error);
+          console.info('Workout details not found');
         }
+      }
       
-      const titleContainer = document.querySelector('.title');
-      titleContainer.querySelector('h1').textContent = sampleWorkout.name;
-      titleContainer.querySelector('p').textContent = sampleWorkout.description;
+      const getExercises = (workout) => workout.exercises;
+   
+      const renderWorkoutDetails = async (workout) => {
+        if(!workout) return;
+        const titleContainer = document.querySelector('.title');
+        titleContainer.querySelector('h1').textContent = workout.name;
+        titleContainer.querySelector('p').textContent = workout.description;
+        
+        const exercisesContainer = document.querySelector('.exercises');
+        const excersiesTemplate = document.querySelector('#exercise-action-template');
+        
+        workout.exercises.forEach((exercise, index) => {
+          const template = excersiesTemplate.content.cloneNode(true);
+          template.querySelector('.action h2').textContent = exercise.action;
+          template.querySelector('.action span').textContent = `${exercise.seconds} seconds`;
+          template.querySelector('.view-details-button').setAttribute('id', index);
+          template.querySelector('.view-details-button').dataset.action = exercise.id;
+          template.querySelector('.instruction').dataset.instruction = index;
+          if(!exercise.hasOwnProperty('id')){
+            template.querySelector('.instruction').remove();
+            template.querySelector('.view-details-button').remove();
+          }
+          exercisesContainer.insertBefore(template, excersiesTemplate);
+        })
+        return workout;
+      }
       
-      const exercisesContainer = document.querySelector('.exercises');
-      sampleWorkout.exercises.forEach((exercise, index) => {
-        const template = document.querySelector('#exercise-action-template').content.cloneNode(true);
-        template.querySelector('.action h2').textContent = exercise.action;
-        template.querySelector('.action span').textContent = `${exercise.seconds} seconds`;
-        template.querySelector('.view-details-button').setAttribute('id', index);
-        template.querySelector('.view-details-button').dataset.action = exercise.id;
-        template.querySelector('.instruction').dataset.instruction = index;
-        if(!exercise.hasOwnProperty('id')){
-          template.querySelector('.instruction').remove();
-          template.querySelector('.view-details-button').remove();
+      // Initialize page with exercise data and add event listeners
+      (function () {
+        const workoutId = getWorkoutIdFromUrl();
+        if(!workoutId) {
+          console.log('Workout ID not found');
+          return;
         }
-        exercisesContainer.insertBefore(template, document.querySelector('#exercise-action-template'));
-      })
-      
-      const accordionHandler = async (e) => {
-        if(e.target.matches('.view-details-button')) {
+        let exercises = getWorkoutDetails(workoutId).
+                      then(renderWorkoutDetails).
+                      then(getExercises);
+        
+        /*******************************************
+        Event listeners and handlers
+        ********************************************/
+        const startHandler = (e) => {
+          if(!e.target.matches('.start-button')) return;
+          e.preventDefault();
+          noSleep.enable();
+          exercises.then(startWorkOut);
+        }
+        
+        const accordionHandler = async (e) => {
+          if(!e.target.matches('.view-details-button')) return;
           e.preventDefault();
           const id = e.target.getAttribute('id');
           const actionId = e.target.dataset.action;
-          
+
           const feed = await fetch('feeds/exercises.json');
           const json = await feed.json();
           const exercise = json[actionId] || {};
-          
+
           const instructionDiv = document.querySelector(`[data-instruction='${id}']`);
           instructionDiv.querySelector('p').textContent = exercise.hasOwnProperty('instruction') ? 
-            exercise.instruction : "";
+            exercise.instruction : "No instructions for this exercise is available at the moment.";
           instructionDiv.querySelector('img').src = exercise.hasOwnProperty('image') ? 
             exercise.image : "";
-          
+
           e.target.classList.toggle('active');
           instructionDiv.classList.toggle('active');
-        } 
-        else {
-          return;
         }
-      }
-      document.addEventListener('click', accordionHandler);
+
+        const spaceKeyHandler = (e) => {
+          e.preventDefault();
+          if(e.keyCode !== 32) return;
+
+          if(!isStarted){
+            noSleep.enable();
+            exercises.then(startWorkOut);
+          }
+          else {
+            pauseWorkOut();
+          }
+       }
+        
+        document.addEventListener('click', e => {
+          accordionHandler(e);
+          startHandler(e);
+        });
+        
+        document.addEventListener('keydown', e => {
+          spaceKeyHandler(e);
+        });
+        
+      })();
     </script>
   </body>
 </html>

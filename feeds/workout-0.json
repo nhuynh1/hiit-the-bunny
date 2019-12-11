@@ -1,0 +1,24 @@
+{
+	"name": "Test Workout",
+	"id": 0,
+	"description": "Just a test workout for testing the app",
+	"exercises": [{
+		"id": 1,
+		"action": "Bicep Curls",
+		"seconds": 20
+	}, {
+		"action": "Rest",
+		"seconds": 20
+	}, {
+		"id": 2,
+		"action": "Lateral Shoulder Raises",
+		"seconds": 20
+	}, {
+		"action": "Rest",
+		"seconds": 20
+	}, {
+		"id": 3,
+		"action": "Dumbbell Rows, Right Arm",
+		"seconds": 20
+	}]
+}
