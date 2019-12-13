@@ -34,9 +34,10 @@ let notificationOn = true;
   DOM elements
 ********************************************/
 const $timer = document.getElementById('timer');
-const $timerSeconds = $timer.querySelector('.timerSeconds');
-const $timerAction = $timer.querySelector('.timerAction');
-const $timerNextAction = $timer.querySelector('.timerNextAction');
+const $timerSeconds = $timer.querySelector('.timerSeconds'),
+      $timerAction = $timer.querySelector('.timerAction'),
+      $timerInstruction = $timer.querySelector('.timerInstruction'),
+      $timerNextAction = $timer.querySelector('.timerNextAction');
 
 const $notificationSound1 = $timer.querySelector('audio#notification1'),
       $notificationSound2 = $timer.querySelector('audio#notification2');
@@ -44,7 +45,8 @@ const $notificationSound1 = $timer.querySelector('audio#notification1'),
 const $prevButton = $timer.querySelector('#prev'),
       $nextButton = $timer.querySelector('#next'),
       $closeButton = $timer.querySelector('#end'),
-      $pauseButton = $timer.querySelector('#pause');
+      $pauseButton = $timer.querySelector('#pause'),
+      $restartButton = $timer.querySelector('#restart');
 
 const $workoutTemplate = document.querySelector('#workouts-template'),
       $workoutsContainer = document.querySelector('.exercises');
@@ -111,19 +113,6 @@ const processSecond = (remainingSeconds, totalSeconds, nextAction) => {
 
 const updateButton = (button, textContent) => button.textContent = textContent;
 
-const listWorkouts = (workouts, workoutNames, template) => {
-  workouts.forEach((workout, index, self) => {
-    const workoutDuration = totalWorkoutDuration(workout);
-    const workoutTemplate = template.content.cloneNode(true);
-    workoutTemplate.querySelector('.action h2').textContent = workoutNames[index];
-    workoutTemplate.querySelector('.action span').textContent = `${roundToOneDecimal(workoutDuration.total)} minutes ∙ ${roundToOneDecimal(workoutDuration.on)} minutes on ∙ ${roundToOneDecimal(workoutDuration.rest)} minutes rest`;
-    // link to exercise list page workout.html with parameter with workout id...
-    workoutTemplate.querySelector('a').href = `workouts.html?workout=${index}`;
-    workoutTemplate.querySelector('.start-button button').dataset.workoutid = index;
-    $workoutsContainer.insertBefore(workoutTemplate, template);
-  });
-}
-
 /*******************************************
   Workout functions
 ********************************************/
@@ -168,6 +157,11 @@ const countDown = ({ action, seconds, nextAction}, currentActionIndex) => {
           noSleep.disable();
           $timer.style.visibility = 'hidden';
         }
+        
+        $restartButton.onclick = () => {
+          currentActionIndex = 0;
+          resolveImmediately();
+        }
       });
 }
 
@@ -187,18 +181,17 @@ const endWorkOut = (action = "Workout complete. Good job!") => {
 }
 
 const startWorkOut = async (workout) => {
-  let currentActionIndex = -1;
+  const workoutWithGetReady = [{action: "Get ready", seconds: 10, nextAction: (workout[0]).action}, ...workout];
+  let currentActionIndex = 0;
 
   $timer.style.visibility = 'visible';
   $timer.classList.remove('workout-ended');
   isPaused = false;
   isStarted = true;
 
-  currentActionIndex = await countDown({action: "Get ready", seconds: 10, nextAction: (workout[0]).action}, currentActionIndex);
-
-  while(workout[currentActionIndex]){
-    let exercise = {...workout[currentActionIndex]};
-    let nextExercise = workout[currentActionIndex + 1];
+  while(workoutWithGetReady[currentActionIndex]){
+    let exercise = {...workoutWithGetReady[currentActionIndex]};
+    let nextExercise = workoutWithGetReady[currentActionIndex + 1];
     exercise.nextAction = nextExercise ? nextExercise.action : "last exercise";
     currentActionIndex = await countDown(exercise, currentActionIndex);
   }

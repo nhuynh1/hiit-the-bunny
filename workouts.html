@@ -10,10 +10,13 @@
 </head>
   <body>
     <div class="wrapper">
+        <div class="error">Sorry, workout not found :(</div>
         <div class="title">
-          <h1></h1>
-          <p></p>
-          <button class="start-button">start</button>
+          <template id="workout-title-template">
+            <h1></h1>
+            <p></p>
+            <button class="button start">start</button>
+          </template>
         </div>
         <div class="exercises">
           <template id="exercise-action-template">
@@ -24,6 +27,7 @@
               </div>
               <div class="instruction">
                 <img src="">
+                <span></span>
                 <p></p>
               </div>
             </div>
@@ -37,14 +41,18 @@
     
     <!-- Timer layer -->
     <div class="wrapper" id="timer">
-      <div class="close-button-wrap"><button id="end" class="skip-button"></button></div>
+      <div class="close-button-wrap">
+        <button id="restart" class="control-button"></button>
+        <button id="end" class="control-button"></button>
+      </div>
       <span class="timerAction">xxx</span>
+      <span class="timerInstruction"></span>
       <span class="timerSeconds">12</span>
       
       <div class="button-wrap">
-        <button id="prev" class="skip-button"></button>
+        <button id="prev" class="control-button"></button>
         <button onclick="pauseWorkOut()" class="button" id="pause">pause</button>
-        <button id="next" class="skip-button"></button>
+        <button id="next" class="control-button"></button>
       </div>
     
       <span class="timerNextAction">xxx</span>
@@ -67,7 +75,7 @@
           const feed = await fetch(`feeds/workout-${id}.json`);
           return await feed.json();
         } catch (error) {
-          console.error(error);
+          console.log(error);
           console.info('Workout details not found');
         }
       }
@@ -76,9 +84,11 @@
    
       const renderWorkoutDetails = async (workout) => {
         if(!workout) return;
-        const titleContainer = document.querySelector('.title');
-        titleContainer.querySelector('h1').textContent = workout.name;
-        titleContainer.querySelector('p').textContent = workout.description;
+        const titleTemplate = document.querySelector('#workout-title-template');
+        const template = titleTemplate.content.cloneNode(true);
+        template.querySelector('h1').textContent = workout.name;
+        template.querySelector('p').textContent = workout.description;
+        document.querySelector('.title').insertBefore(template, titleTemplate);
         
         const exercisesContainer = document.querySelector('.exercises');
         const excersiesTemplate = document.querySelector('#exercise-action-template');
@@ -93,49 +103,58 @@
           if(!exercise.hasOwnProperty('id')){
             template.querySelector('.instruction').remove();
             template.querySelector('.view-details-button').remove();
+            template.querySelector('.action').classList.add('rest');
           }
           exercisesContainer.insertBefore(template, excersiesTemplate);
         })
         return workout;
       }
       
+      const getInstruction = async (actionId) => {
+        const feed = await fetch('feeds/exercises.json');
+        const json = await feed.json();
+        const exercise = json[actionId] || {};
+        const instructionText = exercise.hasOwnProperty('instruction') ? 
+                exercise.instruction : "No instructions for this exercise is available at the moment.";
+        const instructionImage = exercise.hasOwnProperty('image') ? exercise.image : "";
+        const instructionImageCredit = exercise.hasOwnProperty('image-credit') ? `Image: ${exercise['image-credit']}` : "";
+        return { text: instructionText, image: instructionImage, "image-credit": instructionImageCredit };
+      }
+      
       // Initialize page with exercise data and add event listeners
       (function () {
         const workoutId = getWorkoutIdFromUrl();
         if(!workoutId) {
-          console.log('Workout ID not found');
+          window.location.replace('index.html')
           return;
         }
         let exercises = getWorkoutDetails(workoutId).
                       then(renderWorkoutDetails).
-                      then(getExercises);
+                      then(getExercises).
+                      catch(error => {
+                        document.querySelector('.error').classList.add('active');
+                        console.log(error);
+                      });
         
         /*******************************************
         Event listeners and handlers
         ********************************************/
         const startHandler = (e) => {
-          if(!e.target.matches('.start-button')) return;
+          if(!e.target.matches('.start')) return;
           e.preventDefault();
           noSleep.enable();
           exercises.then(startWorkOut);
         }
         
-        const accordionHandler = async (e) => {
-          if(!e.target.matches('.view-details-button')) return;
+        const accordionHandler = (e) => {
           e.preventDefault();
-          const id = e.target.getAttribute('id');
-          const actionId = e.target.dataset.action;
-
-          const feed = await fetch('feeds/exercises.json');
-          const json = await feed.json();
-          const exercise = json[actionId] || {};
-
-          const instructionDiv = document.querySelector(`[data-instruction='${id}']`);
-          instructionDiv.querySelector('p').textContent = exercise.hasOwnProperty('instruction') ? 
-            exercise.instruction : "No instructions for this exercise is available at the moment.";
-          instructionDiv.querySelector('img').src = exercise.hasOwnProperty('image') ? 
-            exercise.image : "";
-
+          if(!e.target.matches('.view-details-button')) return;
+          const instructionDiv = document.querySelector(`[data-instruction='${e.target.getAttribute('id')}']`);
+          getInstruction(e.target.dataset.action).then(instructions => {
+            instructionDiv.querySelector('p').textContent = instructions.text;
+            instructionDiv.querySelector('img').src = instructions.image;
+            instructionDiv.querySelector('span').textContent = instructions["image-credit"];
+          });
           e.target.classList.toggle('active');
           instructionDiv.classList.toggle('active');
         }

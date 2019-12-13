@@ -3,12 +3,14 @@
       "action": "Bicep Curls",
       "instruction": "Stand holding a dumbbell in each hand with your arms hanging by your sides. Ensure your elbows are close to your torso and your palms facing forward. Keeping your upper arms stationary, exhale as you curl the weights up to shoulder level while contracting your biceps.",
       "image": "https://hips.hearstapps.com/ame-prod-menshealth-assets.s3.amazonaws.com/main/assets/bicep-curl.gif?resize=980:*",
+      "image-credit": "Men's Health",
       "video": ""
    },
    "2": {
       "action": "Lateral Shoulder Raises",
       "instruction": "Standing in a shoulder-width stance, grab a pair of dumbbells with palms facing inward and let them hang at your sides. Raise your arms out to the sides until they're at shoulder level. Pause, then lower the weights back to the starting position.",
-      "image": "https://cdn-ami-drupal.heartyhosting.com/sites/muscleandfitness.com/files/styles/188x188/public/studio/906/906_B.jpg?itok=qvsI1NvC",
+      "image": "https://www.verywellfit.com/thmb/9OhmipLgM3hbHTik5aNgICiGltM=/768x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/61-4588211-dumbell-Lateral-side-Raise-GIF-7858592bcda347a9adf46886c5106e73.gif",
+     "image-credit": "Very Well Fit",
       "video": ""
    }
 }

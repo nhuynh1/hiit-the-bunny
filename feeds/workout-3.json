@@ -1,0 +1,87 @@
+{
+	"name": "Chest & Back",
+	"id": 0,
+	"description": "Towards a strong core so you can rock it!",
+	"exercises": [{
+		"id": 2,
+		"action": "Lateral Shoulder Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Tricep Dips",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 8,
+		"action": "Dumbbell Front Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 9,
+		"action": "Overhead Tricep Extensions",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 2,
+		"action": "Lateral Shoulder Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Tricep Dips",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 8,
+		"action": "Dumbbell Front Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 9,
+		"action": "Overhead Tricep Extensions",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 2,
+		"action": "Lateral Shoulder Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Tricep Dips",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 8,
+		"action": "Dumbbell Front Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 9,
+		"action": "Overhead Tricep Extensions",
+		"seconds": 30
+	}]
+}
