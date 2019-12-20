@@ -108,7 +108,7 @@ body{
 }
 
 .instruction {
-  display: none;
+/*  display: none;*/
   color: #747474;
 }
 
@@ -209,6 +209,7 @@ body{
 
 .control-button {
   background-repeat: no-repeat;
+  background-color: white;
   border: none;
   cursor: pointer;
   width: 100px;
@@ -255,3 +256,46 @@ footer {
   flex-direction: column;
   align-items: center;
 }
+
+details {
+  width: 100%;
+}
+
+details summary {
+  list-style-type: none;
+  display: flex;
+  justify-content: flex-end;
+  cursor: pointer;
+  outline-color: pink;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+details summary svg {
+  fill: #c5c5c5;
+  transform: rotate(90deg);
+}
+
+details[open] summary svg{
+  transform: rotate(-90deg);
+}
+
+/*
+details summary::before {
+  content: "⌄";
+  position: absolute;
+  top: -5px;
+  right: 0;
+}
+
+details[open] summary::before {
+  content: "–";
+}*/
