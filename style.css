@@ -299,3 +299,62 @@ details summary::before {
 details[open] summary::before {
   content: "–";
 }*/
+
+/**** Custom Workout Forms *****/
+
+.custom-workout-form {
+  color: #747474;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.custom-workout-form h2 {
+  width: 90%;
+  text-transform: uppercase;
+}
+
+.dropdown {
+  width: 90%;
+}
+
+.dropdown-button {
+  display: block;
+  padding: 10px;
+  border: solid 1px #fb5686;
+  border-bottom: transparent;
+}
+
+.dropdown-search {
+  width: 100%;
+  border: solid 1px #fb5686;
+  font-size: 16px;
+  padding: 10px;
+  outline-color: pink;
+}
+
+.dropdown-content {
+  width: 100%;
+  height: 150px;
+  overflow-y: auto;
+  border: solid 1px #fb5686;
+  border-top: transparent;
+}
+
+.dropdown-content ul {
+  list-style-type: none;
+  padding-left: 0px;
+  margin: 0;
+}
+
+.dropdown-content li {
+  display: block;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.dropdown-content li:hover {
+  background-color: lightpink;
+}
+

@@ -1,0 +1,87 @@
+{
+	"name": "Bunny Arms",
+	"id": 0,
+	"description": "From spaghetti arms to linguini arms",
+	"exercises": [{
+		"id": 1,
+		"action": "Bicep Curls",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 2,
+		"action": "Lateral Shoulder Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 11,
+		"action": "Dumbbell Curl and Press",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Tricep Dips",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 1,
+		"action": "Bicep Curls",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 2,
+		"action": "Lateral Shoulder Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 11,
+		"action": "Dumbbell Curl and Press",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Tricep Dips",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 1,
+		"action": "Bicep Curls",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 2,
+		"action": "Lateral Shoulder Raises",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 11,
+		"action": "Dumbbell Curl and Press",
+		"seconds": 30
+	}, {
+		"action": "Rest",
+		"seconds": 30
+	}, {
+		"id": 7,
+		"action": "Tricep Dips",
+		"seconds": 30
+	}]
+}
