@@ -15,29 +15,113 @@
       <P>This is my awesome workout</P>
     </div>
     <div class="custom-workout-form">
+      <div class="input-wrapper">
+        <label for="workout-name">Workout name (i.e. My awesome leg day)</label>
+        <input class="form-element" id="workout-name" />
+      </div>
+      <div class="input-wrapper">
+        <label for="workout-description">Workout description (optional)</label>
+        <input class="form-element" id="workout-description" />
+      </div>
       <h2>Exercises</h2>
       <div class="dropdown">
         <span>Select action</span>
-        <span class="dropdown-button">View listed actions</span>
-        <input class="dropdown-search" placeholder="Search..."/><div class="dropdown-content">
+        <span class="dropdown-button form-element" tabindex="0">View listed actions</span>
+        <!-- TO DO: add triangle icon to show dropdown -->
+        <div class="dropdown-content">
+          <input class="dropdown-search form-element" placeholder="Search..."/>
           <ul>
-            <li>Add your own exercise</li>
-            <li>Rest</li>
-            <li>Bicep Curls</li>
-            <li>Push-ups</li>
-            <li>Lateral Shoulder Raises</li>
-            <li>Dumbbell Rows, Left Arm</li>
-            <li>Dumbbell Rows, Right Arm</li>
+            <li class="dropdown-option" data-exercise="other">Add your own exercise</li>
+            <li class="dropdown-option" data-exercise="0">Rest</li>
+            <li class="dropdown-option" data-exercise="1">Bicep Curls</li>
+            <li class="dropdown-option" data-exercise="2">Push-ups</li>
+            <li class="dropdown-option" data-exercise="3">Lateral Shoulder Raises</li>
+            <li class="dropdown-option" data-exercise="4">Dumbbell Rows, Left Arm</li>
+            <li class="dropdown-option" data-exercise="5">Dumbbell Rows, Right Arm</li>
           </ul>
         </div>
       </div>
-      <label for="workout-duration">Duration in seconds</label>
-      <input id="workout-duration" />
+      <div class="input-wrapper">
+        <label for="workout-duration">Duration in seconds</label>
+        <input class="form-element" id="workout-duration" />
+      </div>
+      <button class="button add-exercise">add exercise</button>
     </div>
     <footer>
       <span>Just a little HIIT timer</span>
       <span>Created by Nancy Huynh</span>
     </footer>
   </div>
+  
+  <script>
+    const dropdown = document.querySelector('.dropdown');
+    const dropdownContent = document.querySelector('.dropdown-content');
+    const dropdownButton = document.querySelector('.dropdown-button');
+    
+    const createOtherInput = () => {
+      const input = document.createElement('input');
+      const div = document.createElement('div');
+      const label = document.createElement('label');
+      div.classList.add('input-wrapper');
+      div.setAttribute('id', 'other-exercise-wrapper');
+      input.classList.add('form-element');
+      input.setAttribute('id', 'other-exercise');
+      label.setAttribute('for', 'other-exercise');
+      label.textContent = "Exercise name";
+      div.appendChild(label);
+      div.appendChild(input);
+      return div;
+    }
+        
+    const handleDropdownButton = (e) => {
+      if(!e.target.matches('.dropdown-button')) return;
+      dropdown.classList.add('selected');
+      dropdownContent.classList.toggle('show');
+    }
+    
+    const handleOptions = (e) => {
+      if(!e.target.matches('.dropdown-option')) return;
+      const selected = e.target;
+      dropdownButton.textContent = selected.textContent;
+      
+      let otherWrapper = document.querySelector('#other-exercise-wrapper');
+      if(selected.dataset.exercise === "other") {
+        if(!otherWrapper) {
+          otherWrapper = createOtherInput();
+          dropdown.after(otherWrapper);
+        }
+      otherWrapper.querySelector('input').focus();
+      } 
+      else {
+        if(otherWrapper) {
+          otherWrapper.parentNode.removeChild(otherWrapper);
+        }
+      }
+      dropdownContent.classList.remove('show');
+    }
+    
+    document.addEventListener('focusin', (e) => {
+      if(e.target.matches('.dropdown-search')) return;
+      dropdown.classList.remove('selected');
+    });
+    
+    document.addEventListener('click', (e) => {
+      if(e.target.matches('.dropdown-button')){
+        handleDropdownButton(e);
+        return;
+      }
+      
+      if(e.target.matches('.dropdown-option')){
+        handleOptions(e);
+        return;
+      }
+      
+      if(e.target.matches('.dropdown-search')) return;
+      
+      dropdownContent.classList.remove('show');
+      dropdown.classList.remove('selected');
+    });
+  </script>
+  
 </body>
 </html>

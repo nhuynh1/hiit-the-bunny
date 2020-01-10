@@ -302,6 +302,17 @@ details[open] summary::before {
 
 /**** Custom Workout Forms *****/
 
+.form-element {
+  padding: 15px 10px;
+  border: solid 1px #747474;
+  font-size: 16px;
+}
+
+.form-element:focus {
+  border: solid 1px #fb5686;
+  outline: none;
+}
+
 .custom-workout-form {
   color: #747474;
   width: 100%;
@@ -310,42 +321,61 @@ details[open] summary::before {
   align-items: center;
 }
 
+.custom-workout-form > div {
+  padding: 25px 0;
+}
+
 .custom-workout-form h2 {
   width: 90%;
   text-transform: uppercase;
+  padding: 0;
+  margin: 0;
 }
 
 .dropdown {
   width: 90%;
 }
 
-.dropdown-button {
+.dropdown.selected > * {
+  border: solid 1px #fb5686;
+}
+
+.dropdown > * {
+  border: solid 1px #747474;
+}
+
+.dropdown span:first-of-type {
+  border: none;
+}
+
+.dropdown .dropdown-button {
   display: block;
-  padding: 10px;
-  border: solid 1px #fb5686;
-  border-bottom: transparent;
+/*  border-bottom: transparent;*/
 }
 
-.dropdown-search {
+.dropdown .dropdown-search {
   width: 100%;
-  border: solid 1px #fb5686;
   font-size: 16px;
-  padding: 10px;
-  outline-color: pink;
+  border: transparent;
+  border-bottom: inherit;
 }
 
-.dropdown-content {
+.dropdown .dropdown-content {
   width: 100%;
-  height: 150px;
-  overflow-y: auto;
-  border: solid 1px #fb5686;
-  border-top: transparent;
+  margin-top: 5px;
+  display: none;
+}
+
+.dropdown .dropdown-content.show {
+  display: block;
 }
 
 .dropdown-content ul {
   list-style-type: none;
   padding-left: 0px;
   margin: 0;
+  height: 150px;
+  overflow-y: auto;
 }
 
 .dropdown-content li {
@@ -358,3 +388,18 @@ details[open] summary::before {
   background-color: lightpink;
 }
 
+.input-wrapper {
+  width: 90%;
+}
+
+.input-wrapper > *{
+  width: 100%;
+}
+
+.input-wrapper label{
+  display: block;
+}
+
+button.add-exercise {
+  font-size: 15px;
+}
