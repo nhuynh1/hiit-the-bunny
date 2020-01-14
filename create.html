@@ -24,28 +24,35 @@
         <input class="form-element" id="workout-description" />
       </div>
       <h2>Exercises</h2>
-      <div class="dropdown">
-        <span>Select action</span>
-        <span class="dropdown-button form-element" tabindex="0">View listed actions</span>
-        <!-- TO DO: add triangle icon to show dropdown -->
-        <div class="dropdown-content">
-          <input class="dropdown-search form-element" placeholder="Search..."/>
-          <ul>
-            <li class="dropdown-option" data-exercise="other">Add your own exercise</li>
-            <li class="dropdown-option" data-exercise="0">Rest</li>
-            <li class="dropdown-option" data-exercise="1">Bicep Curls</li>
-            <li class="dropdown-option" data-exercise="2">Push-ups</li>
-            <li class="dropdown-option" data-exercise="3">Lateral Shoulder Raises</li>
-            <li class="dropdown-option" data-exercise="4">Dumbbell Rows, Left Arm</li>
-            <li class="dropdown-option" data-exercise="5">Dumbbell Rows, Right Arm</li>
-          </ul>
+      <template id="dropdown-template">
+        <div class="dropdown">
+          <span>Select action</span>
+          <span class="dropdown-button form-element" tabindex="0">View listed actions</span>
+          <!-- TO DO: add triangle icon to show dropdown -->
+          <div class="dropdown-content">
+            <input class="dropdown-search form-element" placeholder="Search..."/>
+            <ul>
+              <li class="dropdown-option" data-exercise="other">Add your own exercise</li>
+              <li class="dropdown-option" data-exercise="0">Rest</li>
+              <li class="dropdown-option" data-exercise="1">Bicep Curls</li>
+              <li class="dropdown-option" data-exercise="2">Push-ups</li>
+              <li class="dropdown-option" data-exercise="3">Lateral Shoulder Raises</li>
+              <li class="dropdown-option" data-exercise="4">Dumbbell Rows, Left Arm</li>
+              <li class="dropdown-option" data-exercise="5">Dumbbell Rows, Right Arm</li>
+            </ul>
+          </div>
         </div>
-      </div>
-      <div class="input-wrapper">
-        <label for="workout-duration">Duration in seconds</label>
-        <input class="form-element" id="workout-duration" />
-      </div>
+        <div class="input-wrapper">
+          <label for="workout-duration">Duration in seconds</label>
+          <input class="form-element" id="workout-duration" />
+        </div>
+      </template>
+      
+      
       <button class="button add-exercise">add exercise</button>
+      
+      
+      
     </div>
     <footer>
       <span>Just a little HIIT timer</span>
@@ -54,9 +61,23 @@
   </div>
   
   <script>
-    const dropdown = document.querySelector('.dropdown');
+    const dropdown = document.querySelector('.dropdown'); // remove
     const dropdownContent = document.querySelector('.dropdown-content');
     const dropdownButton = document.querySelector('.dropdown-button');
+    
+    /** UTILITY **/
+    const getParentNode = (node, className) => {
+      let parent = node.parentNode;
+      if(parent.matches(`.${className}`)) {
+        return parent;
+      }
+      else if(parent.matches('body')) {
+        return false;
+      }
+      else {
+        return getParentNode(parent, className);
+      }
+    }
     
     const createOtherInput = () => {
       const input = document.createElement('input');
@@ -75,20 +96,23 @@
         
     const handleDropdownButton = (e) => {
       if(!e.target.matches('.dropdown-button')) return;
-      dropdown.classList.add('selected');
-      dropdownContent.classList.toggle('show');
+      const currentDropdown = getParentNode(e.target, 'dropdown');
+      
+      currentDropdown.classList.add('selected');
+      currentDropdown.querySelector('.dropdown-content').classList.toggle('show');
     }
     
     const handleOptions = (e) => {
       if(!e.target.matches('.dropdown-option')) return;
       const selected = e.target;
-      dropdownButton.textContent = selected.textContent;
+      let currentDropdown = getParentNode(selected, 'dropdown');
+      currentDropdown.querySelector('.dropdown-button').textContent = selected.textContent;
       
       let otherWrapper = document.querySelector('#other-exercise-wrapper');
       if(selected.dataset.exercise === "other") {
         if(!otherWrapper) {
           otherWrapper = createOtherInput();
-          dropdown.after(otherWrapper);
+          currentDropdown.after(otherWrapper);
         }
       otherWrapper.querySelector('input').focus();
       } 
@@ -97,12 +121,18 @@
           otherWrapper.parentNode.removeChild(otherWrapper);
         }
       }
-      dropdownContent.classList.remove('show');
+      currentDropdown.querySelector('.dropdown-content').classList.remove('show');
+    }
+    
+    const handleAddExerciseButton = (e) => {
+      if(!e.target.matches('.add-exercise')) return;
+      // replicate dropdown exercise
+      // turn dropdown exercise into a template
     }
     
     document.addEventListener('focusin', (e) => {
       if(e.target.matches('.dropdown-search')) return;
-      dropdown.classList.remove('selected');
+      dropdown.classList.remove('selected'); // fix
     });
     
     document.addEventListener('click', (e) => {
@@ -118,9 +148,23 @@
       
       if(e.target.matches('.dropdown-search')) return;
       
+      if(e.target.matches('.add-exercise')) {
+        handleAddExerciseButton(e);
+      }
+      
       dropdownContent.classList.remove('show');
       dropdown.classList.remove('selected');
     });
+    
+    
+    // Add the first Add Exercise dropdown when page loads
+    (function() {
+      
+      // turn this into separate function to be used by the add exercise button as well
+      let template = document.querySelector('#dropdown-template');
+//      let templateClone = template.content.cloneNode(true);
+      template.parentNode.insertBefore(template.content.cloneNode(true), document.querySelector('.add-exercise'));
+    })();
   </script>
   
 </body>
