@@ -158,8 +158,13 @@ const workoutBackChest = [
         {action: "Inclined Push-ups", seconds: 30},
 ]
 
-const workouts = [workoutTest, workoutLegs, workoutArms, workoutShoulders, workoutBackChest];
-const workoutsTitles = ["For Testing", "Girl Power Legs", "Bunny Arms", "Bunny Shoulders", "Chest & Back"];
+const workoutCore = [
+  {action: "Rest", seconds: 330},
+  {action: "Exercise", seconds: 360}
+]
+
+const workouts = [workoutTest, workoutLegs, workoutArms, workoutShoulders, workoutBackChest, workoutCore];
+const workoutsTitles = ["For Testing", "Girl Power Legs", "Bunny Arms", "Bunny Shoulders", "Chest & Back", "Core and more"];
 
 /*******************************************
   Load page data

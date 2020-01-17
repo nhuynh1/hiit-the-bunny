@@ -32,7 +32,7 @@
           <div class="dropdown-content">
             <input class="dropdown-search form-element" placeholder="Search..."/>
             <ul>
-              <li class="dropdown-option" data-exercise="other">Add your own exercise</li>
+              <li class="dropdown-option selected" data-exercise="other">Add your own exercise</li>
               <li class="dropdown-option" data-exercise="0">Rest</li>
               <li class="dropdown-option" data-exercise="1">Bicep Curls</li>
               <li class="dropdown-option" data-exercise="2">Push-ups</li>
@@ -60,12 +60,10 @@
     </footer>
   </div>
   
-  <script>
-    const dropdown = document.querySelector('.dropdown'); // remove
-    const dropdownContent = document.querySelector('.dropdown-content');
-    const dropdownButton = document.querySelector('.dropdown-button');
+  <script>    
+    let exercises = [];
     
-    /** UTILITY **/
+    /**** UTILITY FUNCTIONS ****/
     const getParentNode = (node, className) => {
       let parent = node.parentNode;
       if(parent.matches(`.${className}`)) {
@@ -79,26 +77,64 @@
       }
     }
     
+    const removeAllChildren = (node) => {
+      while(node.firstChild) {
+        node.removeChild(node.firstChild);
+      }
+    }
+    
+    
+    /**** USER-RELATED FUNCTIONS ****/
+    const searchExercises = (query) => {
+      try {
+        const regex = new RegExp(query, 'gi');
+        return exercises.filter(exercise => exercise.match(regex));
+      }
+      catch(err) {
+        console.error(err);
+        return [];
+      }
+    }
+    
+    /**** DOM MODIFICATION FUNCTIONS ****/
+    
+    const replicateDropdown = () => document.querySelector('#dropdown-template').content.cloneNode(true);
+    
+    const addDropdown = () => {
+      let addExerciseButton = document.querySelector('.add-exercise');
+      addExerciseButton.parentNode.insertBefore(replicateDropdown(), addExerciseButton);
+    }
+    
     const createOtherInput = () => {
       const input = document.createElement('input');
       const div = document.createElement('div');
       const label = document.createElement('label');
-      div.classList.add('input-wrapper');
-      div.setAttribute('id', 'other-exercise-wrapper');
+      div.classList.add('input-wrapper', 'other-exercise-wrapper');
       input.classList.add('form-element');
-      input.setAttribute('id', 'other-exercise');
-      label.setAttribute('for', 'other-exercise');
       label.textContent = "Exercise name";
       div.appendChild(label);
       div.appendChild(input);
       return div;
     }
-        
+    
+    const displayOptions = (optionsArray) => {      
+      return optionsArray.reduce((fragment, option, index) => {
+        let li = document.createElement('li');
+        li.classList.add('dropdown-option');
+//        if(index === 0) li.classList.add('selected');
+        li.dataset.exercise = option === "Add your own exercise" ? "other" : 1; 
+        // TO DO: pull in exercise id from feed
+        li.textContent = option;
+        fragment.appendChild(li);
+        return fragment;
+      }, document.createDocumentFragment());
+    }
+
+    /**** EVENT HANDLER FUNCTIONS ****/    
+    
     const handleDropdownButton = (e) => {
       if(!e.target.matches('.dropdown-button')) return;
       const currentDropdown = getParentNode(e.target, 'dropdown');
-      
-      currentDropdown.classList.add('selected');
       currentDropdown.querySelector('.dropdown-content').classList.toggle('show');
     }
     
@@ -108,31 +144,62 @@
       let currentDropdown = getParentNode(selected, 'dropdown');
       currentDropdown.querySelector('.dropdown-button').textContent = selected.textContent;
       
-      let otherWrapper = document.querySelector('#other-exercise-wrapper');
+      let other = currentDropdown.querySelector('.other-exercise-wrapper');
       if(selected.dataset.exercise === "other") {
-        if(!otherWrapper) {
-          otherWrapper = createOtherInput();
-          currentDropdown.after(otherWrapper);
+        if(!other) {
+          other = createOtherInput()
+          currentDropdown.appendChild(other);
         }
-      otherWrapper.querySelector('input').focus();
-      } 
+        other.querySelector('input').focus();
+      }
       else {
-        if(otherWrapper) {
-          otherWrapper.parentNode.removeChild(otherWrapper);
-        }
+        if(other) other.parentNode.removeChild(other);
+        currentDropdown.querySelector('.dropdown-button').focus();
       }
       currentDropdown.querySelector('.dropdown-content').classList.remove('show');
     }
     
     const handleAddExerciseButton = (e) => {
       if(!e.target.matches('.add-exercise')) return;
-      // replicate dropdown exercise
-      // turn dropdown exercise into a template
+      addDropdown();
+    }
+    
+    const handleSearchInput = (e) => {
+      if(!e.target.matches('.dropdown-search')) return;
+
+      if([40, 38].includes(e.keyCode)) { 
+        e.preventDefault();
+        let currentDropdown = getParentNode(e.target, 'dropdown');
+        let selected = currentDropdown.querySelector('.dropdown-content li.selected');
+        console.log(selected);
+        if(selected && selected.nextElementSibling && e.keyCode === 40) { // down
+          
+          selected.classList.remove('selected');
+          selected.nextElementSibling.classList.add('selected');
+          selected.scrollIntoView();
+        }
+        if(selected && selected.previousElementSibling && e.keyCode === 38) { // up
+          selected.classList.remove('selected');
+          selected.previousElementSibling.classList.add('selected');
+          selected.previousElementSibling.scrollIntoView();
+        }
+        return;
+      }
+  
+      
+      // enter key functionality
+      
+      
+      let list = displayOptions(searchExercises(e.target.value));
+      let dropdownList = getParentNode(e.target, 'dropdown')
+                              .querySelector('.dropdown-content ul');
+      removeAllChildren(dropdownList);
+      dropdownList.appendChild(list);
     }
     
     document.addEventListener('focusin', (e) => {
       if(e.target.matches('.dropdown-search')) return;
-      dropdown.classList.remove('selected'); // fix
+//      dropdown.classList.remove('selected'); // fix
     });
     
     document.addEventListener('click', (e) => {
@@ -152,18 +219,19 @@
         handleAddExerciseButton(e);
       }
       
-      dropdownContent.classList.remove('show');
-      dropdown.classList.remove('selected');
+//      dropdownContent.classList.remove('show'); //fix
+//      dropdown.classList.remove('selected');
     });
     
+    document.addEventListener('keyup', e => {
+      if(!e.target.matches('.dropdown-search')) return;
+      handleSearchInput(e);
+    })
     
-    // Add the first Add Exercise dropdown when page loads
-    (function() {
-      
-      // turn this into separate function to be used by the add exercise button as well
-      let template = document.querySelector('#dropdown-template');
-//      let templateClone = template.content.cloneNode(true);
-      template.parentNode.insertBefore(template.content.cloneNode(true), document.querySelector('.add-exercise'));
+    /**** INITIALIZE ****/
+    ;(function() {
+      addDropdown();
+      exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => li.textContent);
     })();
   </script>
   

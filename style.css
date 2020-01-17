@@ -336,12 +336,14 @@ details[open] summary::before {
   width: 90%;
 }
 
+/*
 .dropdown.selected > * {
   border: solid 1px #fb5686;
 }
+*/
 
-.dropdown > * {
-  border: solid 1px #747474;
+.dropdown-content > * {
+  border: solid 1px #fb5686;
 }
 
 .dropdown span:first-of-type {
@@ -350,13 +352,13 @@ details[open] summary::before {
 
 .dropdown .dropdown-button {
   display: block;
-/*  border-bottom: transparent;*/
+  cursor: pointer;
 }
 
 .dropdown .dropdown-search {
   width: 100%;
   font-size: 16px;
-  border: transparent;
+/*  border: transparent;*/
   border-bottom: inherit;
 }
 
@@ -369,6 +371,13 @@ details[open] summary::before {
 .dropdown .dropdown-content.show {
   display: block;
 }
+
+/*
+.dropdown-button:focus + .dropdown-content {
+  display: block;
+}
+*/
+
 
 .dropdown-content ul {
   list-style-type: none;
@@ -384,7 +393,7 @@ details[open] summary::before {
   cursor: pointer;
 }
 
-.dropdown-content li:hover {
+.dropdown-content li:hover, .dropdown-option.selected {
   background-color: lightpink;
 }
 
