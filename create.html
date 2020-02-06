@@ -23,36 +23,29 @@
         <label for="workout-description">Workout description (optional)</label>
         <input class="form-element" id="workout-description" />
       </div>
-      <h2>Exercises</h2>
+      <h2>Exercises</h2>      
       <template id="dropdown-template">
-        <div class="dropdown">
-          <span>Select action</span>
-          <span class="dropdown-button form-element" tabindex="0">View listed actions</span>
-          <!-- TO DO: add triangle icon to show dropdown -->
-          <div class="dropdown-content">
-            <input class="dropdown-search form-element" placeholder="Search..."/>
-            <ul>
-              <li class="dropdown-option selected" data-exercise="other">Add your own exercise</li>
-              <li class="dropdown-option" data-exercise="0">Rest</li>
-              <li class="dropdown-option" data-exercise="1">Bicep Curls</li>
-              <li class="dropdown-option" data-exercise="2">Push-ups</li>
-              <li class="dropdown-option" data-exercise="3">Lateral Shoulder Raises</li>
-              <li class="dropdown-option" data-exercise="4">Dumbbell Rows, Left Arm</li>
-              <li class="dropdown-option" data-exercise="5">Dumbbell Rows, Right Arm</li>
-            </ul>
+        <div class="exercise-inputs-wrapper">
+          <div class="dropdown">
+            <span>Select action</span>
+            <span class="dropdown-button form-element" tabindex="0">View listed actions</span>
+            <div class="dropdown-content">
+              <input class="dropdown-search form-element" placeholder="Search..."/>
+              <ul>
+                <li class="dropdown-option selected" data-exercise="other">Add your own exercise</li>
+                <li class="dropdown-option" data-exercise="0">Rest</li>
+              </ul>
+            </div>
           </div>
-        </div>
-        <div class="input-wrapper">
-          <label for="workout-duration">Duration in seconds</label>
-          <input class="form-element" id="workout-duration" />
+          <div class="input-wrapper workout-duration">
+            <label for="workout-duration">Duration in seconds</label>
+            <input class="form-element" id="workout-duration" />
+          </div>
         </div>
       </template>
       
       
-      <button class="button add-exercise">add exercise</button>
-      
-      
-      
+      <button class="add-exercise">+ add exercise</button>
     </div>
     <footer>
       <span>Just a little HIIT timer</span>
@@ -62,6 +55,7 @@
   
   <script>    
     let exercises = [];
+    const workoutForm = document.querySelector('.custom-workout-form')
     
     /**** UTILITY FUNCTIONS ****/
     const getParentNode = (node, className) => {
@@ -83,6 +77,20 @@
       }
     }
     
+    const getNextSibling = (node, selector) => {
+      let sibling = node.nextElementSibling;
+      if (!selector) return sibling;
+      while (sibling) {
+        if (sibling.matches(selector)) return sibling;
+        sibling = sibling.nextElementSibling
+	     }
+    };
+    
+    const getListedExercises = async () => {
+      let feed = await fetch('feeds/exercises.json');
+//      console.log(feed.json());
+      return feed.json();
+    }
     
     /**** USER-RELATED FUNCTIONS ****/
     const searchExercises = (query) => {
@@ -96,6 +104,25 @@
       }
     }
     
+    const saveWorkout = () => {
+      // save all exercises on the page
+      const exerciseDropdowns = document.querySelectorAll('.exercise-inputs-wrapper');
+      exerciseDropdowns.forEach(exerciseWrapper => {
+        let dropdown = exerciseWrapper.querySelector('.dropdown-button');
+        let exercise = dropdown.textContent === 'Add your own exercise' ? 
+                        dropdown.closest('.dropdown')
+                          .querySelector('.other-exercise-wrapper input')
+                          .value : 
+                        dropdown.textContent;
+        let duration = exerciseWrapper.querySelector('#workout-duration').value;
+        let id = dropdown.dataset.exercise;
+        
+        console.log({exercise, duration, id});
+      })
+      
+      // save to local storage
+    }
+    
     /**** DOM MODIFICATION FUNCTIONS ****/
     
     const replicateDropdown = () => document.querySelector('#dropdown-template').content.cloneNode(true);
@@ -103,6 +130,24 @@
     const addDropdown = () => {
       let addExerciseButton = document.querySelector('.add-exercise');
       addExerciseButton.parentNode.insertBefore(replicateDropdown(), addExerciseButton);
+    }
+    
+    const fillDropdown = (exercisesList) => {
+//      const template = replicateDropdown();
+      const template = document.querySelector('#dropdown-template');
+      const list = template.content.querySelector('ul');
+      
+      const fragment = Object.entries(exercisesList)
+                          .reduce((fragment, [id, exercise]) => {
+                            let li = document.createElement('li');
+                            li.textContent = exercise.action;
+                            li.classList.add('dropdown-option');
+                            li.dataset.exercise = id;
+                            fragment.appendChild(li);
+                            return fragment;
+                          }, document.createDocumentFragment());      
+      
+      list.appendChild(fragment);
     }
     
     const createOtherInput = () => {
@@ -121,7 +166,7 @@
       return optionsArray.reduce((fragment, option, index) => {
         let li = document.createElement('li');
         li.classList.add('dropdown-option');
-//        if(index === 0) li.classList.add('selected');
+        if(index === 0) li.classList.add('selected');
         li.dataset.exercise = option === "Add your own exercise" ? "other" : 1; 
         // TO DO: pull in exercise id from feed
         li.textContent = option;
@@ -136,13 +181,18 @@
       if(!e.target.matches('.dropdown-button')) return;
       const currentDropdown = getParentNode(e.target, 'dropdown');
       currentDropdown.querySelector('.dropdown-content').classList.toggle('show');
+      currentDropdown.querySelector('.dropdown-search').focus();
+      currentDropdown.scrollIntoView({block: "start", inline: "nearest", behavior: 'smooth'});
+      
     }
     
     const handleOptions = (e) => {
       if(!e.target.matches('.dropdown-option')) return;
       const selected = e.target;
       let currentDropdown = getParentNode(selected, 'dropdown');
-      currentDropdown.querySelector('.dropdown-button').textContent = selected.textContent;
+      let currentDropdownButton = currentDropdown.querySelector('.dropdown-button');
+      currentDropdownButton.textContent = selected.textContent;
+      currentDropdownButton.dataset.exercise = selected.dataset.exercise;
       
       let other = currentDropdown.querySelector('.other-exercise-wrapper');
       if(selected.dataset.exercise === "other") {
@@ -164,16 +214,15 @@
       addDropdown();
     }
     
-    const handleSearchInput = (e) => {
+    const handleArrowKeys = (e) => {
       if(!e.target.matches('.dropdown-search')) return;
 
       if([40, 38].includes(e.keyCode)) { 
         e.preventDefault();
         let currentDropdown = getParentNode(e.target, 'dropdown');
         let selected = currentDropdown.querySelector('.dropdown-content li.selected');
-        console.log(selected);
+//        console.log(currentDropdown.querySelector('ul').scrollTop);
         if(selected && selected.nextElementSibling && e.keyCode === 40) { // down
-          
           selected.classList.remove('selected');
           selected.nextElementSibling.classList.add('selected');
           selected.scrollIntoView();
@@ -185,10 +234,19 @@
         }
         return;
       }
-  
       
-      // enter key functionality
-      
+      if(e.keyCode === 13) {
+        e.preventDefault();
+        let currentDropdown = getParentNode(e.target, 'dropdown');
+        let selected = currentDropdown.querySelector('.dropdown-content li.selected');
+        selected.click();
+        return;
+      }
+    }
+    
+    const handleSearchInput = (e) => {
+      if(!e.target.matches('.dropdown-search')) return;
+      if([40, 38, 13].includes(e.keyCode)) return;
       
       let list = displayOptions(searchExercises(e.target.value));
       let dropdownList = getParentNode(e.target, 'dropdown')
@@ -226,12 +284,32 @@
     document.addEventListener('keyup', e => {
       if(!e.target.matches('.dropdown-search')) return;
       handleSearchInput(e);
-    })
+    });
+    
+    document.addEventListener('keydown', e => {
+      if(!e.target.matches('.dropdown-search')) return;
+      handleArrowKeys(e);
+    });
+    
+    workoutForm.addEventListener('mouseover', e => {
+      if(!e.target.matches('.dropdown-option')) return;
+      if(e.target.matches('.selected')) return;
+      e.target.closest('ul').querySelector('.selected').classList.remove('selected');
+      e.target.classList.add('selected');
+    });
     
     /**** INITIALIZE ****/
     ;(function() {
-      addDropdown();
-      exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => li.textContent);
+      getListedExercises()
+        .then(fillDropdown)
+        .then(addDropdown)
+        .then(() => {
+           exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => li.textContent);
+      })
+//      addDropdown();
+      // use feed to get exercises
+      
+//      exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => li.textContent);
     })();
   </script>
   

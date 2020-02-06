@@ -319,6 +319,7 @@ details[open] summary::before {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #f8f8f8;
 }
 
 .custom-workout-form > div {
@@ -334,6 +335,7 @@ details[open] summary::before {
 
 .dropdown {
   width: 90%;
+  position: relative;
 }
 
 /*
@@ -355,6 +357,19 @@ details[open] summary::before {
   cursor: pointer;
 }
 
+.dropdown .dropdown-button:after {
+  /* add triangle to dropdown */
+  content: '';
+  position: absolute;
+  right: 10px;
+  border: 8px solid transparent;
+  border-color: #fb5686 transparent transparent transparent;
+}
+
+.dropdown .dropdown-option {
+  position: relative;
+}
+
 .dropdown .dropdown-search {
   width: 100%;
   font-size: 16px;
@@ -364,7 +379,7 @@ details[open] summary::before {
 
 .dropdown .dropdown-content {
   width: 100%;
-  margin-top: 5px;
+  margin-top: 2px;
   display: none;
 }
 
@@ -405,10 +420,43 @@ details[open] summary::before {
   width: 100%;
 }
 
+.input-wrapper.workout-duration {
+  padding-top: 10px;
+}
+
 .input-wrapper label{
   display: block;
 }
 
+.input-wrapper input{
+  color: grey;
+}
+
 button.add-exercise {
   font-size: 15px;
+  width: 90%; 
+  height: 199px; 
+  border: dashed 1px lightgrey; 
+  border-radius: 5px; 
+  margin-bottom: 20px; 
+  background-color: transparent; 
+  color: #b4b4b4;
+  cursor: pointer;
+  outline: none;
+}
+
+button.add-exercise:hover, button.add-exercise:focus {
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  font-size: 1.1em;
+}
+
+.exercise-inputs-wrapper {
+  border:solid 1px #eaeaea; 
+  border-radius: 5px; 
+  width: 90%; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  background-color: white; 
+  margin: 20px 0;
 }

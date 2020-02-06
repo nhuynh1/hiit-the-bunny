@@ -12,5 +12,13 @@
       "image": "https://www.verywellfit.com/thmb/9OhmipLgM3hbHTik5aNgICiGltM=/768x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/61-4588211-dumbell-Lateral-side-Raise-GIF-7858592bcda347a9adf46886c5106e73.gif",
      "image-credit": "Very Well Fit",
       "video": ""
-   }
+   },
+  "3": {
+    "action": "Dumbbell Rows, Right Arm",
+    "instruction": "xxx"
+  },
+    "4": {
+    "action": "Dumbbell Rows, Left Arm",
+    "instruction": "xxx"
+  }
 }
