@@ -11,16 +11,25 @@
 <body>
   <div class="wrapper">
     <div class="title">
-      <h1>Workouts</h1>
-      <P>A few workouts to get started</P>
+      <h1>Workout Timers</h1>
     </div>
+    
+    
     <div class="exercises">
+      <h2 id="your-workouts">Your workouts</h2>
+      
+      <!-- add custom workouts here -->
+      
+      <h2 id="premade-workouts">Pre-made workouts</h2>
+      <p>A few pre-made workouts to get you started</p>
       <template id="workouts-template">
         <div class="action">
-        <h2></h2>
-        <span></span>
-        <a href=''>Workout details</a>
-      </div>
+          <div style="flex: 1">
+            <h2></h2>
+            <span></span>
+          </div>
+          <a class="right-chevron" href=''></a> 
+        </div>
       </template>
     </div>
     <footer>
@@ -30,5 +39,32 @@
   </div>
   <script src="NoSleep.min.js"></script>
   <script src="scripts.js"></script>
+  <script>
+    //get localstorage custom workout list
+    const createP = (workoutObj) => {
+      const template = document.querySelector('#workouts-template').content.cloneNode(true);
+      template.querySelector('h2').textContent = workoutObj.name;
+      template.querySelector('a').href = `workouts.html?custom&workout=${workoutObj.id}`;
+      return template;
+    }
+    
+    const customWorkouts = JSON.parse(localStorage.getItem('customWorkouts')) || {};
+    const fragment = document.createDocumentFragment();
+    
+    if(Object.keys(customWorkouts).length > 0) {
+      Object.entries(customWorkouts).forEach(([key, value]) => {
+        let template = createP({id: key, name: value});
+        fragment.appendChild(template);
+      });
+    }
+    else {
+      let p = document.createElement('p');
+      p.innerHTML = "Your custom workouts will show up here. You currently do not have any. Create one <a href='/create.html'>here</a>";
+      fragment.appendChild(p);
+    }
+    
+    $workoutsContainer.insertBefore(fragment, document.querySelector('#premade-workouts'));
+    
+  </script>
 </body>
 </html>

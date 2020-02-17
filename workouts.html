@@ -69,16 +69,23 @@
 
       const getWorkoutIdFromUrl = () => {
         const urlParams = new URLSearchParams(document.location.search);
-        return urlParams.has('workout') ? urlParams.get('workout') : undefined;
+        let id = urlParams.has('workout') ? urlParams.get('workout') : undefined;
+        let custom = urlParams.has('custom');
+        return {id, custom}
       }
 
-      const getWorkoutDetails = async (id = 0) => {
-        try {
-          const feed = await fetch(`feeds/workout-${id}.json`);
-          return await feed.json();
-        } catch (error) {
-          console.log(error);
-          console.info('Workout details not found');
+      const getWorkoutDetails = async (urlParams = {}) => {
+        if(urlParams.custom) {
+          return JSON.parse(localStorage.getItem(`workout-${urlParams.id}`));
+        }
+        else {
+          try {
+            const feed = await fetch(`feeds/workout-${urlParams.id}.json`);
+            return await feed.json();
+          } catch (error) {
+            console.log(error);
+            console.info('Workout details not found');
+          }
         }
       }
       
@@ -130,7 +137,7 @@
       // Initialize page with exercise data and add event listeners
       (function () {
         const workoutId = getWorkoutIdFromUrl();
-        if(!workoutId) {
+        if(!workoutId.id) {
           window.location.replace('index.html')
           return;
         }

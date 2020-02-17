@@ -43,16 +43,17 @@
           </div>
         </div>
       </template>
-      
-      
       <button class="add-exercise">+ add exercise</button>
+    </div>
+    <div class="center-content wide-content">
+      <button class="save" onclick="saveWorkout()">Save workout</button>
     </div>
     <footer>
       <span>Just a little HIIT timer</span>
       <span>Created by Nancy Huynh</span>
     </footer>
   </div>
-  
+    
   <script>    
     let exercises = [];
     const workoutForm = document.querySelector('.custom-workout-form')
@@ -88,7 +89,6 @@
     
     const getListedExercises = async () => {
       let feed = await fetch('feeds/exercises.json');
-//      console.log(feed.json());
       return feed.json();
     }
     
@@ -104,23 +104,40 @@
       }
     }
     
-    const saveWorkout = () => {
-      // save all exercises on the page
+    const saveWorkout = () => { // save all exercises on the page
       const exerciseDropdowns = document.querySelectorAll('.exercise-inputs-wrapper');
+      let exerciseObjs = [];
       exerciseDropdowns.forEach(exerciseWrapper => {
         let dropdown = exerciseWrapper.querySelector('.dropdown-button');
-        let exercise = dropdown.textContent === 'Add your own exercise' ? 
+        let action = dropdown.textContent === 'Add your own exercise' ? 
                         dropdown.closest('.dropdown')
                           .querySelector('.other-exercise-wrapper input')
                           .value : 
                         dropdown.textContent;
-        let duration = exerciseWrapper.querySelector('#workout-duration').value;
-        let id = dropdown.dataset.exercise;
-        
-        console.log({exercise, duration, id});
-      })
+        let seconds = parseInt(exerciseWrapper.querySelector('#workout-duration').value);
+        let id = parseInt(dropdown.dataset.exercise);
+        exerciseObjs.push({ id, action, seconds });
+      });
+            
+      const customWorkouts = JSON.parse(localStorage.getItem('customWorkouts')) || {};
+      const newID = Math.max(...Object.keys(customWorkouts), -1) + 1;
+
+      const workoutObj = {
+        name: document.querySelector('#workout-name').value,
+        id: newID,
+        description: document.querySelector('#workout-description').value,
+        exercises: exerciseObjs,
+      }
       
-      // save to local storage
+      // save new workout
+      localStorage.setItem(`workout-${newID}`, JSON.stringify(workoutObj));
+      
+      // update list of custom workouts
+      const customWorkoutsUpdated = { ...customWorkouts };
+      customWorkoutsUpdated[newID] = document.querySelector('#workout-name').value;
+      localStorage.setItem('customWorkouts', JSON.stringify(customWorkoutsUpdated));
+      
+      return exerciseObjs;
     }
     
     /**** DOM MODIFICATION FUNCTIONS ****/
@@ -221,7 +238,6 @@
         e.preventDefault();
         let currentDropdown = getParentNode(e.target, 'dropdown');
         let selected = currentDropdown.querySelector('.dropdown-content li.selected');
-//        console.log(currentDropdown.querySelector('ul').scrollTop);
         if(selected && selected.nextElementSibling && e.keyCode === 40) { // down
           selected.classList.remove('selected');
           selected.nextElementSibling.classList.add('selected');
@@ -241,6 +257,13 @@
         let selected = currentDropdown.querySelector('.dropdown-content li.selected');
         selected.click();
         return;
+      }
+    }
+    
+    const handleSpaceKey = (e) => {
+      if(e.keyCode === 32) {
+        e.preventDefault();
+        e.target.closest('.dropdown').querySelector('.dropdown-content').classList.toggle('show');
       }
     }
     
@@ -287,8 +310,14 @@
     });
     
     document.addEventListener('keydown', e => {
-      if(!e.target.matches('.dropdown-search')) return;
-      handleArrowKeys(e);
+      if(e.target.matches('.dropdown-search')) {
+        handleArrowKeys(e);
+        return;
+      }
+      if(e.target.matches('.dropdown-button')) {
+        handleSpaceKey(e);
+        return;
+      }
     });
     
     workoutForm.addEventListener('mouseover', e => {
@@ -305,6 +334,7 @@
         .then(addDropdown)
         .then(() => {
            exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => li.textContent);
+          // TO DO: pull in exercise id from feed
       })
 //      addDropdown();
       // use feed to get exercises

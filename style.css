@@ -1,3 +1,10 @@
+:root {
+  --primary-color: #fb5686;
+  --font-color: #747474;
+  --hover-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  --heading-font: 'Archivo Narrow', sans-serif;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -6,6 +13,24 @@ body{
   font-family: 'Rubik', sans-serif;
   background-color: #EAE8EE;
   font-size: 16px;
+}
+
+a, a:visited {
+  color: var(--primary-color);
+}
+
+button {
+  cursor: pointer;
+}
+
+.center-content {
+  display: flex; 
+  justify-content: center;
+}
+
+.wide-content {
+  width: 100%; 
+  margin: 20px 0;
 }
 
 .wrapper {
@@ -50,6 +75,26 @@ body{
   align-items: center;
 }
 
+.exercises h2 {
+  font-family: var(--heading-font);
+  text-transform: uppercase;
+  width: 90%;
+  font-size: 24px;
+}
+
+.exercises h2 + p {
+  color: var(--font-color);
+  width: 90%;
+}
+
+h2#your-workouts {
+  color: var(--primary-color);
+}
+
+h2#premade-workouts {
+  color: var(--font-color);
+}
+
 .action:first-child {
   margin-top: 40px;
 }
@@ -57,7 +102,7 @@ body{
 .action {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   background-color: white;
   border-radius: 5px;
   margin-bottom: 40px;
@@ -440,7 +485,8 @@ button.add-exercise {
   border-radius: 5px; 
   margin-bottom: 20px; 
   background-color: transparent; 
-  color: #b4b4b4;
+/*  color: #b4b4b4;*/
+  color: grey;
   cursor: pointer;
   outline: none;
 }
@@ -459,4 +505,28 @@ button.add-exercise:hover, button.add-exercise:focus {
   align-items: center; 
   background-color: white; 
   margin: 20px 0;
+}
+
+button.save {
+  background-color: var(--primary-color); 
+  width:90%; 
+  border-radius: 5px; 
+  color: white; 
+  border: solid 1px #fb5686; 
+  padding: 20px; 
+  font-size: 1em;
+  outline-color: var(--primary-color);
+}
+
+button.save:hover, button.save:focus {
+  box-shadow: var(--hover-shadow);
+}
+
+.right-chevron {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23c5c5c5"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right;
+  width: 60px;
+  height: 60px;
+  border: none;
 }
