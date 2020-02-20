@@ -12,9 +12,9 @@ const roundToOneDecimal = (n) => Math.round(n * 10) / 10;
 const totalWorkoutDuration = (workout = []) => {
   const duration = workout.reduce((total, exercise) => {
                       if(exercise.action.toLowerCase() === "rest"){
-                        total.rest += exercise.seconds / 60;
+                        total.rest += exercise.seconds; // / 60;
                       } else {
-                        total.on += exercise.seconds / 60;
+                        total.on += exercise.seconds; // / 60;
                       }
                       return total;
                   }, {rest: 0, on: 0});
@@ -25,148 +25,59 @@ const totalWorkoutDuration = (workout = []) => {
 /*******************************************
   Templating functions
 ********************************************/
-const listWorkouts = (workouts, workoutNames, template) => {
-  workouts.forEach((workout, index, self) => {
-    const workoutDuration = totalWorkoutDuration(workout);
-    const workoutTemplate = template.content.cloneNode(true);
-    workoutTemplate.querySelector('.action h2').textContent = workoutNames[index];
-    workoutTemplate.querySelector('.action span').textContent = `${roundToOneDecimal(workoutDuration.total)} minutes ∙ ${roundToOneDecimal(workoutDuration.on)} minutes on ∙ ${roundToOneDecimal(workoutDuration.rest)} minutes rest`;
-    workoutTemplate.querySelector('a').href = `workouts.html?workout=${index}`;
 
-    $workoutsContainer.insertBefore(workoutTemplate, template);
-  });
+const populateWorkoutsSummaryTemplate = (template = $workoutTemplate, workoutObj) => {
+    const workoutTemplate = template.content.cloneNode(true);
+    workoutTemplate.querySelector('.action h2').textContent = workoutObj.name;
+    workoutTemplate.querySelector('.action span').textContent =
+      `${roundToOneDecimal((workoutObj.rest + workoutObj.on) / 60)} minutes ∙ ${roundToOneDecimal(workoutObj.on / 60)} minutes on ∙ ${roundToOneDecimal(workoutObj.rest / 60)} minutes rest`;
+    workoutTemplate.querySelector('a').href = `workouts.html?${workoutObj.custom ? "custom&" : ""}workout=${workoutObj.id}`;
+    return workoutTemplate;
 }
 
-/*******************************************
-  Workouts data
-********************************************/
-const workoutArms = [
-        {action: "Bicep Curls", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Lateral Shoulder Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Rows, Right Arm", seconds: 30},
-        {action: "Rest", seconds: 10},
-        {action: "Dumbbell Rows, Left Arm", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Bicep Curls", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Lateral Shoulder Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Rows, Right Arm", seconds: 30},
-        {action: "Rest", seconds: 10},
-        {action: "Dumbbell Rows, Left Arm", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Bicep Curls", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Lateral Shoulder Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Rows, Right Arm", seconds: 30},
-        {action: "Rest", seconds: 10},
-        {action: "Dumbbell Rows, Left Arm", seconds: 30},
-      ];
+const listWorkouts = async (template) => {
+  const feed = await fetch(`feeds/workouts.json`);
+  const json = await feed.json();
+  const fragment = document.createDocumentFragment();
+  
+  Object.entries(json).forEach(([key, value]) => {
+    let workoutTemplate = populateWorkoutsSummaryTemplate(template, {id: key, 
+                                               name: value.name, 
+                                               rest: value.rest, 
+                                               on: value.on,
+                                               custom: false}); 
+    fragment.appendChild(workoutTemplate);
+  });
+  $workoutsContainer.insertBefore(fragment, template);
+}
 
-const workoutTest = [
-        {action: "Bicep Curls", seconds: 20},
-        {action: "Rest", seconds: 20},
-        {action: "Lateral Shoulder Raises", seconds: 20},
-        {action: "Rest", seconds: 20},
-        {action: "Dumbbell Rows, Right Arm", seconds: 20}
-      ];
+// leverage the totalWorkoutDuration function in the create custom workout page
 
-const workoutLegs = [
-        {action: "Goblet Squats", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Glute Bridges", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Deadlift with Dumbbells", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Calf Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Goblet Squats", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Glute Bridges", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Deadlift with Dumbbells", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Calf Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Goblet Squats", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Glute Bridges", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Deadlift with Dumbbells", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Calf Raises", seconds: 30}
-      ];
+const listCustomWorkouts = (template) => {
+  const customWorkouts = JSON.parse(localStorage.getItem('customWorkouts')) || {};
+  const fragment = document.createDocumentFragment();
+  
+  if(Object.keys(customWorkouts).length > 0) {
+      Object.entries(customWorkouts).forEach(([key, value]) => {
+        let workoutTemplate = populateWorkoutsSummaryTemplate(template, {id: key, 
+                                               name: value.name, 
+                                               rest: value.rest, 
+                                               on: value.on, 
+                                               custom: true});
+        fragment.appendChild(workoutTemplate);
+      });
+    }
+  else {
+      let p = document.createElement('p');
+      p.innerHTML = "Your custom workouts will show up here. You currently do not have any. Create one <a href='/create.html'>here</a>";
+      fragment.appendChild(p);
+    }
+  $workoutsContainer.insertBefore(fragment, document.querySelector('#premade-workouts'));
+}
 
-const workoutShoulders = [
-        {action: "Lateral Shoulder Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Tricep Dips", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Front Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Overhead Tricep Extensions", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Lateral Shoulder Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Tricep Dips", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Front Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Overhead Tricep Extensions", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Lateral Shoulder Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Tricep Dips", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Front Raises", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Overhead Tricep Extensions", seconds: 30}
-]
-
-const workoutBackChest = [
-        {action: "Dumbbell Rows, Right Arm", seconds: 30},
-        {action: "Rest", seconds: 10},
-        {action: "Dumbbell Rows, Left Arm", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Chest Presses", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Bentover Reverse Flye", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Inclined Push-ups", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Rows, Right Arm", seconds: 30},
-        {action: "Rest", seconds: 10},
-        {action: "Dumbbell Rows, Left Arm", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Chest Presses", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Bentover Reverse Flye", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Inclined Push-ups", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Rows, Right Arm", seconds: 30},
-        {action: "Rest", seconds: 10},
-        {action: "Dumbbell Rows, Left Arm", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Dumbbell Chest Presses", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Bentover Reverse Flye", seconds: 30},
-        {action: "Rest", seconds: 30},
-        {action: "Inclined Push-ups", seconds: 30},
-]
-
-const workoutCore = [
-  {action: "Rest", seconds: 330},
-  {action: "Exercise", seconds: 360}
-]
-
-const workouts = [workoutTest, workoutLegs, workoutArms, workoutShoulders, workoutBackChest, workoutCore];
-const workoutsTitles = ["For Testing", "Girl Power Legs", "Bunny Arms", "Bunny Shoulders", "Chest & Back", "Core and more"];
 
 /*******************************************
   Load page data
 ********************************************/
-listWorkouts(workouts, workoutsTitles, $workoutTemplate);
+listWorkouts($workoutTemplate); // pre-made exercises
+listCustomWorkouts($workoutTemplate); // custom exercises in localStorage

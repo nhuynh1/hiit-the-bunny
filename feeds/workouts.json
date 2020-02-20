@@ -1,0 +1,32 @@
+{
+  "0": {
+    "name":"Test Workout",
+    "rest":40,
+    "on":60
+  },
+  "1": {
+    "name": "Girl Power Legs",
+    "rest": 330,
+    "on": 360
+  },
+  "2": {
+    "name": "Bunny Arms",
+    "rest": 270,
+    "on": 360
+  },
+  "3": {
+    "name": "Bunny Shoulders",
+    "rest": 330,
+    "on": 360
+  },
+  "4": {
+    "name": "Chest & Back",
+    "rest": 360,
+    "on": 450
+  },
+  "5": {
+    "name": "Core and more",
+    "rest": 330,
+    "on": 360
+  }
+}

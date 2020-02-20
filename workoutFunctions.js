@@ -1,4 +1,22 @@
 /*******************************************
+  Workout JSON Format
+  ----------------------------
+  {
+	 "name": "Test Workout",
+	 "id": 0,
+	 "description": "Just a test workout for testing the app",
+	 "exercises": [{
+      "id": 1,
+      "action": "Bicep Curls",
+      "seconds": 20
+	 }, {
+      "action": "Rest",
+      "seconds": 20
+	}]
+}
+********************************************/
+
+/*******************************************
   Initialization functions
 ********************************************/
 const initializeSpeechSynthesis = () => {

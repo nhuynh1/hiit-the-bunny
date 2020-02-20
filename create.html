@@ -59,6 +59,19 @@
     const workoutForm = document.querySelector('.custom-workout-form')
     
     /**** UTILITY FUNCTIONS ****/
+    const totalWorkoutDuration = (workout = []) => {
+      const duration = workout.reduce((total, exercise) => {
+                          if(exercise.action.toLowerCase() === "rest"){
+                            total.rest += exercise.seconds; // / 60;
+                          } else {
+                            total.on += exercise.seconds; // / 60;
+                          }
+                          return total;
+                      }, {rest: 0, on: 0});
+      duration.total = duration.on + duration.rest;
+      return duration;
+    }
+    
     const getParentNode = (node, className) => {
       let parent = node.parentNode;
       if(parent.matches(`.${className}`)) {
@@ -96,7 +109,7 @@
     const searchExercises = (query) => {
       try {
         const regex = new RegExp(query, 'gi');
-        return exercises.filter(exercise => exercise.match(regex));
+        return exercises.filter(exercise => exercise['exercise'].match(regex));
       }
       catch(err) {
         console.error(err);
@@ -133,9 +146,11 @@
       localStorage.setItem(`workout-${newID}`, JSON.stringify(workoutObj));
       
       // update list of custom workouts
-      const customWorkoutsUpdated = { ...customWorkouts };
-      customWorkoutsUpdated[newID] = document.querySelector('#workout-name').value;
-      localStorage.setItem('customWorkouts', JSON.stringify(customWorkoutsUpdated));
+      let duration = totalWorkoutDuration(exerciseObjs);
+      
+      customWorkouts[newID] = {name: document.querySelector('#workout-name').value, rest: duration.rest, on: duration.on};
+      //TO DO: calculate rest and on durations before saving
+      localStorage.setItem('customWorkouts', JSON.stringify(customWorkouts));
       
       return exerciseObjs;
     }
@@ -184,9 +199,8 @@
         let li = document.createElement('li');
         li.classList.add('dropdown-option');
         if(index === 0) li.classList.add('selected');
-        li.dataset.exercise = option === "Add your own exercise" ? "other" : 1; 
-        // TO DO: pull in exercise id from feed
-        li.textContent = option;
+        li.dataset.exercise = option.exercise === "Add your own exercise" ? "other" : option.id;
+        li.textContent = option.exercise;
         fragment.appendChild(li);
         return fragment;
       }, document.createDocumentFragment());
@@ -333,8 +347,7 @@
         .then(fillDropdown)
         .then(addDropdown)
         .then(() => {
-           exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => li.textContent);
-          // TO DO: pull in exercise id from feed
+           exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => ({id: li.dataset.exercise, exercise: li.textContent}));
       })
 //      addDropdown();
       // use feed to get exercises

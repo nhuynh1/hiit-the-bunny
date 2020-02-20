@@ -114,6 +114,7 @@
             instructionDiv.querySelector('span').textContent = instructions["image-credit"];
           });
           
+          //TO DO: if id is 0 then rest, if id is null then it is custom
           if(!exercise.hasOwnProperty('id')){
             template.querySelector('details').remove();
             template.querySelector('.action').classList.add('rest');
