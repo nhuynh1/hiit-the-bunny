@@ -11,43 +11,47 @@
 <body>
   <div class="wrapper">
     <div class="title">
-      <h1>My workout</h1>
-      <P>This is my awesome workout</P>
+      <h1>Create your own workout</h1>
+      <p>Custom workouts are saved to your browser. Clearing your cache will remove the workouts</p>
     </div>
-    <div class="custom-workout-form">
-      <div class="input-wrapper">
-        <label for="workout-name">Workout name (i.e. My awesome leg day)</label>
-        <input class="form-element" id="workout-name" />
-      </div>
-      <div class="input-wrapper">
-        <label for="workout-description">Workout description (optional)</label>
-        <input class="form-element" id="workout-description" />
-      </div>
-      <h2>Exercises</h2>      
-      <template id="dropdown-template">
-        <div class="exercise-inputs-wrapper">
-          <div class="dropdown">
-            <span>Select action</span>
-            <span class="dropdown-button form-element" tabindex="0">View listed actions</span>
-            <div class="dropdown-content">
-              <input class="dropdown-search form-element" placeholder="Search..."/>
-              <ul>
-                <li class="dropdown-option selected" data-exercise="other">Add your own exercise</li>
-                <li class="dropdown-option" data-exercise="0">Rest</li>
-              </ul>
+<!--    <form onsubmit="saveWorkout()" class="validate">-->
+    <form class="validate">
+      <div class="custom-workout-form">
+        <div class="input-wrapper">
+          <label for="workout-name">Workout name (i.e. My awesome leg day)</label>
+          <input type="text" class="form-element" id="workout-name" required />
+        </div>
+        <div class="input-wrapper">
+          <label for="workout-description">Workout description (optional)</label>
+          <input class="form-element" id="workout-description" />
+        </div>
+        <h2>Exercises</h2>      
+        <template id="dropdown-template">
+          <div class="exercise-inputs-wrapper">
+            <div class="dropdown">
+              <span>Select action</span>
+              <span class="dropdown-button form-element" tabindex="0">View listed actions</span>
+              <div class="dropdown-content">
+                <input class="dropdown-search form-element" placeholder="Search..."/>
+                <ul>
+                  <li class="dropdown-option selected" data-exercise="other">Add your own exercise</li>
+                  <li class="dropdown-option" data-exercise="0">Rest</li>
+                </ul>
+              </div>
+            </div>
+            <div class="input-wrapper workout-duration">
+              <label for="workout-duration">Duration in seconds</label>
+              <input type="number" min="0" pattern="^[0-9]" class="form-element" title="Enter a duration in seconds greater than 0." id="workout-duration" required/>
+              <!-- TO DO: review id attribute needs; there can be multiple duration inputs -->
             </div>
           </div>
-          <div class="input-wrapper workout-duration">
-            <label for="workout-duration">Duration in seconds</label>
-            <input class="form-element" id="workout-duration" />
-          </div>
-        </div>
-      </template>
-      <button class="add-exercise">+ add exercise</button>
-    </div>
-    <div class="center-content wide-content">
-      <button class="save" onclick="saveWorkout()">Save workout</button>
-    </div>
+        </template>
+        <button type="button" class="add-exercise">+ add exercise</button>
+      </div>
+      <div class="center-content wide-content">
+        <button type="submit" class="save">Save workout</button>
+      </div>
+    </form>
     <footer>
       <span>Just a little HIIT timer</span>
       <span>Created by Nancy Huynh</span>
@@ -59,6 +63,133 @@
     const workoutForm = document.querySelector('.custom-workout-form')
     
     /**** UTILITY FUNCTIONS ****/
+    
+    const inputHasError = (field) => {
+      // Don't validate submits, buttons, file and reset inputs, and disabled fields
+      if (field.disabled || field.type === 'file' || field.type === 'reset' || field.type === 'submit' || field.type === 'button') return;
+
+      // Get validity object
+      var validity = field.validity;
+
+      // If valid, return null
+      if (validity.valid) return;
+      
+      // If field is required and empty
+      if (validity.valueMissing) return 'Please fill out this field.';
+      
+      // If not the right type
+      if (validity.typeMismatch) return 'Please use the correct input type.';
+
+      // If too short
+      if (validity.tooShort) return 'Please lengthen this text.';
+
+      // If too long
+      if (validity.tooLong) return 'Please shorten this text.';
+
+      // If number input isn't a number
+      if (validity.badInput) return 'Please enter a number.';
+
+      // If a number value doesn't match the step interval
+      if (validity.stepMismatch) return 'Please select a valid value.';
+
+      // If a number field is over the max
+      if (validity.rangeOverflow) return 'Please select a smaller value.';
+
+      // If a number field is below the min
+      if (validity.rangeUnderflow) return 'Please select a larger value.';
+
+      // If pattern doesn't match
+      if (validity.patternMismatch) return 'Please match the requested format.';
+
+      // If all else fails, return a generic catchall error
+      return 'The value you entered for this field is invalid.';
+    }
+    
+    const showError = (field, errorMessage) => {
+      field.classList.add('error', 'active');
+      let span;
+      if(field.nextElementSibling === null || !field.nextSibling.matches('.error-message')){
+        span = document.createElement('span');
+        span.classList.add('error-message');
+        field.parentNode.insertBefore(span, field.nextSibling);
+      } else {
+        span = field.nextSibling;
+      }
+        span.innerHTML = `${errorMessage} 
+            <br />${field.title ? field.title : ''}`;
+    }
+    
+    const removeError = (field) => {
+      field.classList.remove('error', 'active');
+      if(field.nextElementSibling !== null && field.nextElementSibling.matches('.error-message')){
+        field.nextElementSibling.style.display = 'none';
+      }
+    }
+    
+    // Look into using Constraint Validation API
+    //https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation
+    const checkInput = (check) => {
+      /**
+        check = { element: DOM element,
+                  required: true or false,
+                  validation: 'number' or 'text',
+                  regex: RegExp object or string}
+        check that it is not View listed actions with expression:
+          ^((?!View listed actions).)*$
+      **/
+      
+      // helper: check is number
+      const isNumber = (n) => typeof n == 'number' && !isNaN(n) && isFinite(n);
+      
+      // helper: check if value matches regular expression
+      const matchesRegex = (value, regex) => {
+        if (!regex) return true;
+        if (regex instanceof RegExp) return regex.test(value);
+        let newRegex = new RegExp(regex);
+        return newRegex.test(value);
+      }
+      
+      // validate value against type (number or text)
+      const validate = (value, validationType, regex) => {
+        switch(validationType){
+          case 'number':
+            return isNumber(parseInt(value)) && matchesRegex(value, regex);
+            break;
+          case 'text':
+            return typeof value == "string" && matchesRegex(value, regex);
+            break;
+          case undefined:
+            return true;
+            break;
+          default:
+            return false;
+        }
+      }
+      
+      // grab value from DOM element
+      let value = check.element.value || check.element.textContent;
+      
+      // check the value of the DOM element matches the criteria:
+      
+      // required field has content, validate against type and regex if available
+      if(check.required && value.trim().length > 0) {
+        return validate(value, check.validation, check.regex);
+      } 
+      // empty required fields return false
+      else if(check.required && value.trim().length === 0) {
+        return false;
+      }
+      // non-required field has content: validate against type and regex if available
+      else if(value.trim() !== "") {
+          return validate(value, check.validation, check.regex);
+      }
+      // non-required field is empty return true;
+      else {
+          return true;
+      }
+    }
+    
+    
     const totalWorkoutDuration = (workout = []) => {
       const duration = workout.reduce((total, exercise) => {
                           if(exercise.action.toLowerCase() === "rest"){
@@ -118,6 +249,8 @@
     }
     
     const saveWorkout = () => { // save all exercises on the page
+      
+      
       const exerciseDropdowns = document.querySelectorAll('.exercise-inputs-wrapper');
       let exerciseObjs = [];
       exerciseDropdowns.forEach(exerciseWrapper => {
@@ -129,6 +262,8 @@
                         dropdown.textContent;
         let seconds = parseInt(exerciseWrapper.querySelector('#workout-duration').value);
         let id = parseInt(dropdown.dataset.exercise);
+        //TO DO: validate the fields
+        
         exerciseObjs.push({ id, action, seconds });
       });
             
@@ -149,11 +284,11 @@
       let duration = totalWorkoutDuration(exerciseObjs);
       
       customWorkouts[newID] = {name: document.querySelector('#workout-name').value, rest: duration.rest, on: duration.on};
-      //TO DO: calculate rest and on durations before saving
+      
       localStorage.setItem('customWorkouts', JSON.stringify(customWorkouts));
       
       return exerciseObjs;
-    }
+    } // end saveWorkout()
     
     /**** DOM MODIFICATION FUNCTIONS ****/
     
@@ -341,6 +476,29 @@
       e.target.classList.add('selected');
     });
     
+    document.addEventListener('submit', e => {
+      const fields = e.target.elements;
+      let hasErrors = false;
+      [...fields].forEach(field => {
+        let errorMessage = inputHasError(field);
+        if(errorMessage) {
+          showError(field, errorMessage);
+          hasErrors = true;
+        } else {
+          removeError(field);
+        }
+      });
+      
+      // check the custom dropdown here
+      
+      if(hasErrors) {
+        e.preventDefault();
+      }
+      else {
+        saveWorkout();
+      }
+    })
+    
     /**** INITIALIZE ****/
     ;(function() {
       getListedExercises()
@@ -348,11 +506,12 @@
         .then(addDropdown)
         .then(() => {
            exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => ({id: li.dataset.exercise, exercise: li.textContent}));
-      })
-//      addDropdown();
-      // use feed to get exercises
-      
-//      exercises = [...document.querySelectorAll('.dropdown-content ul li')].map(li => li.textContent);
+        })
+        .then(() => {
+          document.querySelectorAll('.validate').forEach(form => {
+            form.setAttribute('novalidate', '');
+          });
+        })
     })();
   </script>
   

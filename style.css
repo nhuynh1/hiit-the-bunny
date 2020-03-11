@@ -67,6 +67,10 @@ button {
   margin: 0 auto;
 }
 
+.title > p {
+  color: var(--font-color);
+}
+
 .exercises {
   background-color: #f8f8f8;
   width: 100%;
@@ -529,4 +533,16 @@ button.save:hover, button.save:focus {
   width: 60px;
   height: 60px;
   border: none;
+}
+
+.error {
+  border: solid 2px red;
+}
+
+.error-message {
+  width: 100%;
+  display: block;
+  padding: 5px;
+  background-color: red;
+  color: white;
 }
