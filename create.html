@@ -57,139 +57,14 @@
       <span>Created by Nancy Huynh</span>
     </footer>
   </div>
-    
+  
+  <script src="validation.js"></script>
   <script>    
     let exercises = [];
     const workoutForm = document.querySelector('.custom-workout-form')
     
     /**** UTILITY FUNCTIONS ****/
-    
-    const inputHasError = (field) => {
-      // Don't validate submits, buttons, file and reset inputs, and disabled fields
-      if (field.disabled || field.type === 'file' || field.type === 'reset' || field.type === 'submit' || field.type === 'button') return;
 
-      // Get validity object
-      var validity = field.validity;
-
-      // If valid, return null
-      if (validity.valid) return;
-      
-      // If field is required and empty
-      if (validity.valueMissing) return 'Please fill out this field.';
-      
-      // If not the right type
-      if (validity.typeMismatch) return 'Please use the correct input type.';
-
-      // If too short
-      if (validity.tooShort) return 'Please lengthen this text.';
-
-      // If too long
-      if (validity.tooLong) return 'Please shorten this text.';
-
-      // If number input isn't a number
-      if (validity.badInput) return 'Please enter a number.';
-
-      // If a number value doesn't match the step interval
-      if (validity.stepMismatch) return 'Please select a valid value.';
-
-      // If a number field is over the max
-      if (validity.rangeOverflow) return 'Please select a smaller value.';
-
-      // If a number field is below the min
-      if (validity.rangeUnderflow) return 'Please select a larger value.';
-
-      // If pattern doesn't match
-      if (validity.patternMismatch) return 'Please match the requested format.';
-
-      // If all else fails, return a generic catchall error
-      return 'The value you entered for this field is invalid.';
-    }
-    
-    const showError = (field, errorMessage) => {
-      field.classList.add('error', 'active');
-      let span;
-      if(field.nextElementSibling === null || !field.nextSibling.matches('.error-message')){
-        span = document.createElement('span');
-        span.classList.add('error-message');
-        field.parentNode.insertBefore(span, field.nextSibling);
-      } else {
-        span = field.nextSibling;
-      }
-        span.innerHTML = `${errorMessage} 
-            <br />${field.title ? field.title : ''}`;
-    }
-    
-    const removeError = (field) => {
-      field.classList.remove('error', 'active');
-      if(field.nextElementSibling !== null && field.nextElementSibling.matches('.error-message')){
-        field.nextElementSibling.style.display = 'none';
-      }
-    }
-    
-    // Look into using Constraint Validation API
-    //https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation
-    const checkInput = (check) => {
-      /**
-        check = { element: DOM element,
-                  required: true or false,
-                  validation: 'number' or 'text',
-                  regex: RegExp object or string}
-        check that it is not View listed actions with expression:
-          ^((?!View listed actions).)*$
-      **/
-      
-      // helper: check is number
-      const isNumber = (n) => typeof n == 'number' && !isNaN(n) && isFinite(n);
-      
-      // helper: check if value matches regular expression
-      const matchesRegex = (value, regex) => {
-        if (!regex) return true;
-        if (regex instanceof RegExp) return regex.test(value);
-        let newRegex = new RegExp(regex);
-        return newRegex.test(value);
-      }
-      
-      // validate value against type (number or text)
-      const validate = (value, validationType, regex) => {
-        switch(validationType){
-          case 'number':
-            return isNumber(parseInt(value)) && matchesRegex(value, regex);
-            break;
-          case 'text':
-            return typeof value == "string" && matchesRegex(value, regex);
-            break;
-          case undefined:
-            return true;
-            break;
-          default:
-            return false;
-        }
-      }
-      
-      // grab value from DOM element
-      let value = check.element.value || check.element.textContent;
-      
-      // check the value of the DOM element matches the criteria:
-      
-      // required field has content, validate against type and regex if available
-      if(check.required && value.trim().length > 0) {
-        return validate(value, check.validation, check.regex);
-      } 
-      // empty required fields return false
-      else if(check.required && value.trim().length === 0) {
-        return false;
-      }
-      // non-required field has content: validate against type and regex if available
-      else if(value.trim() !== "") {
-          return validate(value, check.validation, check.regex);
-      }
-      // non-required field is empty return true;
-      else {
-          return true;
-      }
-    }
-    
-    
     const totalWorkoutDuration = (workout = []) => {
       const duration = workout.reduce((total, exercise) => {
                           if(exercise.action.toLowerCase() === "rest"){
@@ -323,6 +198,8 @@
       const label = document.createElement('label');
       div.classList.add('input-wrapper', 'other-exercise-wrapper');
       input.classList.add('form-element');
+      input.setAttribute('required', '');
+      input.setAttribute('type', 'text');
       label.textContent = "Exercise name";
       div.appendChild(label);
       div.appendChild(input);
@@ -479,6 +356,8 @@
     document.addEventListener('submit', e => {
       const fields = e.target.elements;
       let hasErrors = false;
+      
+      // check the input fields
       [...fields].forEach(field => {
         let errorMessage = inputHasError(field);
         if(errorMessage) {
@@ -489,7 +368,21 @@
         }
       });
       
-      // check the custom dropdown here
+      // check the custom dropdowns
+      const dropdowns = e.target.querySelectorAll('.dropdown-button');
+      dropdowns.forEach(dd => {
+        let errorMessage = customDropdownHasError({
+                          element: dd, 
+                          required: true, 
+                          validation: 'text', 
+                          regex: /^((?!View listed actions).)*$/ });
+        if(errorMessage) {
+          showError(dd, errorMessage);
+          hasErrors = true;
+        } else {
+          removeError(dd);
+        }
+      })
       
       if(hasErrors) {
         e.preventDefault();
